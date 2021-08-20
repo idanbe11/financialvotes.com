@@ -19,7 +19,7 @@ import * as _ from 'lodash';
 import NotificationAlert from 'react-notification-alert';
 import Guest from 'layouts/Guest';
 import { getCoinBySlug, getAllCoinSlugs, voteForCoin } from 'lib/api';
-import Modal from 'components/elements/Modal';
+import Modal from 'components/Elements/Modal';
 
 const CoinSidebar = ({
   links,
