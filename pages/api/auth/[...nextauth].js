@@ -8,7 +8,7 @@ const options = {
       name: 'Credentials',
       credentials: {
         username: { label: 'Email', type: 'email', placeholder: 'Your email' },
-        password: { label: 'Password', type: 'password', placeholder: 'Password' }
+        password: { label: 'Password', type: 'password' }
       },
       authorize: async (credentials) => {
         try {
@@ -17,7 +17,16 @@ const options = {
             password: credentials.password
           });
           if (user.data) {
-            return user.data;
+            const userData = {
+              user: {
+                id: user.data.user.id,
+                username: user.data.user.username,
+                email: user.data.user.email,
+                avatar: user.data.user.avatar
+              },
+              jwt: user.data.jwt
+            }
+            return userData;
           } else {
             return null;
           }
