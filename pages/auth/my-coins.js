@@ -27,7 +27,7 @@ const TableItem = ({ coin_id, name, symbol, votes, promoted, created }) => {
   );
 };
 
-const Orders = (props) => {
+const MyCoins = (props) => {
   const [myCoins, setMyCoins] = useState([]);
   const [votes, setVotes] = useState([]);
   const [fetched, setFetched] = useState(false);
@@ -107,7 +107,7 @@ const Orders = (props) => {
   );
 };
 
-Orders.layout = Auth;
-Orders.protected = true;
+MyCoins.layout = Auth;
+MyCoins.protected = true;
 
-export default Orders;
+export default MyCoins;

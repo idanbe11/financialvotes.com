@@ -6,23 +6,6 @@ if (typeof document === 'undefined') {
     querySelector: () => {}
   };
 }
-/*!
-
-=========================================================
-* NextJS Argon Dashboard - v1.1.0
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/nextjs-argon-dashboard
-* Copyright 2021 Creative Tim (https://www.creative-tim.com)
-* Licensed under MIT (https://github.com/creativetimofficial/nextjs-argon-dashboard/blob/master/LICENSE.md)
-
-* Coded by Creative Tim
-
-=========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-*/
 const Chart = require('chart.js');
 //
 // Chart extension for making the bars rounded
@@ -417,9 +400,128 @@ let chartExample2 = {
   }
 };
 
+const createPrimaryChartData = (dataset = []) => {
+  const viewLabels = dataset.views.map((elem) => elem.label);
+  const clickLabels = dataset.clicks.map((elem) => elem.label);
+  const viewData = dataset.views.map((elem) => elem.value);
+  const clickData = dataset.clicks.map((elem) => elem.value);
+  console.log(viewLabels, viewData);
+  let chartData = {
+    options: {
+      scales: {
+        yAxes: [
+          {
+            gridLines: {
+              color: colors.gray[900],
+              zeroLineColor: colors.gray[900]
+            },
+            ticks: {
+              callback: function (value) {
+                if (!(value % 10)) {
+                  return value;
+                }
+              }
+            }
+          }
+        ]
+      },
+      tooltips: {
+        callbacks: {
+          label: function (item, data) {
+            var label = data.datasets[item.datasetIndex].label || '';
+            var yLabel = item.yLabel;
+            var content = '';
+
+            if (data.datasets.length > 1) {
+              content += label;
+            }
+
+            content += yLabel;
+            return content;
+          }
+        }
+      }
+    },
+    clicks: (canvas) => {
+      return {
+        labels: clickLabels,
+        datasets: [
+          {
+            label: 'Events',
+            data: clickData
+          }
+        ]
+      };
+    },
+    views: (canvas) => {
+      return {
+        labels: viewLabels,
+        datasets: [
+          {
+            label: 'Events',
+            data: viewData
+          }
+        ]
+      };
+    }
+  };
+  return chartData;
+};
+
+const createSecondaryChartData = (dataset = []) => {
+  const labels = dataset.map((elem) => elem.label);
+  const data = dataset.map((elem) => elem.value);
+  console.log(labels, data);
+  let chartData = {
+    options: {
+      scales: {
+        yAxes: [
+          {
+            ticks: {
+              callback: function (value) {
+                if (!(value % 10)) {
+                  //return '$' + value + 'k'
+                  return value;
+                }
+              }
+            }
+          }
+        ]
+      },
+      tooltips: {
+        callbacks: {
+          label: function (item, data) {
+            var label = data.datasets[item.datasetIndex].label || '';
+            var yLabel = item.yLabel;
+            var content = '';
+            if (data.datasets.length > 1) {
+              content += label;
+            }
+            content += yLabel;
+            return content;
+          }
+        }
+      }
+    },
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Events',
+          data,
+          maxBarThickness: 10
+        }
+      ]
+    }
+  };
+  return chartData;
+};
+
 module.exports = {
   chartOptions, // used inside src/views/Index.js
   parseOptions, // used inside src/views/Index.js
   chartExample1, // used inside src/views/Index.js
-  chartExample2 // used inside src/views/Index.js
+  chartExample2, // used inside src/views/Index.js
+  createPrimaryChartData,
+  createSecondaryChartData
 };

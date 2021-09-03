@@ -25,7 +25,7 @@ const options = {
                 avatar: user.data.user.avatar
               },
               jwt: user.data.jwt
-            }
+            };
             return userData;
           } else {
             return null;

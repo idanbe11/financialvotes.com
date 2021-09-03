@@ -141,13 +141,11 @@ const NewCoin = ({ pageData, error }) => {
       const res = await submitCoin(coin, logo, session.jwt);
       if (!!res && !!res.id) {
         setLoading(false);
-        notify('success', 'Success!', 'Your request is submitted!');
         setTimeout(() => {
-          router.push('/auth/overview');
+          router.push(`/auth/orders/status?ref=${res.id}`);
         }, 500);
       } else {
         setLoading(false);
-        notify('danger', 'Error!', 'Invalid request! Please double check the details.');
       }
       // console.log('handleSubmit', res);
     }

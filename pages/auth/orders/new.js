@@ -1,10 +1,5 @@
-import React from 'react';
-// node.js library that concatenates classes (strings)
-import classnames from 'classnames';
-// javascipt plugin for creating charts
-import Chart from 'chart.js';
-// react plugin used to create charts
-import { Line, Bar } from 'react-chartjs-2';
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 // reactstrap components
 import {
@@ -12,27 +7,21 @@ import {
   Card,
   CardHeader,
   CardBody,
-  NavItem,
-  NavLink,
-  Nav,
   Progress,
-  Table,
   Container,
   Row,
-  Col
+  Col,
+  Form,
+  Input,
+  FormGroup
 } from 'reactstrap';
+import Select from 'react-select';
 // layout for this page
 import Auth from 'layouts/Auth';
-// core components
-import {
-  chartOptions,
-  parseOptions,
-  chartExample1,
-  chartExample2
-} from 'variables/charts.js';
-
 import AuthHeader from 'components/Headers/AuthHeader';
-import { getOrderPageData } from 'lib/api';
+import RichText from 'components/Elements/RichText';
+import { getMyCoins, getOrderPageData, createOrder } from 'lib/api';
+import { useSession } from 'next-auth/client';
 
 const NewOrder = ({ pageData, error }) => {
   const router = useRouter();
@@ -41,20 +30,119 @@ const NewOrder = ({ pageData, error }) => {
     router.push('/auth/overview');
     return <div />;
   }
-  console.log('NEW ORDER!!!', data);
 
-  const [activeNav, setActiveNav] = React.useState(1);
-  const [chartExample1Data, setChartExample1Data] = React.useState('data1');
+  const {
+    title,
+    subtitle,
+    walletDetails,
+    instructions,
+    warningMessage,
+    advertisementPackage,
+    coinPromoPackage
+  } = pageData;
 
-  if (window.Chart) {
-    parseOptions(Chart, chartOptions());
-  }
+  console.log('NEW ORDER!!!', pageData);
+  const [orderType, setOrderType] = useState('');
+  const [accept, setAccept] = useState(false);
+  const [initial, setInitial] = useState(true);
+  const [orderItemText, setOrderItemText] = useState('');
+  const [advertLink, setAdvertLink] = useState('');
+  const [bannar, setBanner] = useState(undefined);
+  const [selectedCoin, setSelectedCoin] = useState('');
+  const [price, setPrice] = useState(0);
+  const [myCoins, setMyCoins] = useState([]);
+  const [fetched, setFetched] = useState(false);
+  const [session, loading] = useSession();
 
-  const toggleNavs = (e, index) => {
-    e.preventDefault();
-    setActiveNav(index);
-    setChartExample1Data('data' + index);
+  console.log(router.query, orderType);
+
+  useEffect(() => {
+    const fetchMyCoins = async () => {
+      const data = await getMyCoins(session.jwt);
+      setMyCoins(data);
+      setFetched(true);
+    };
+    if (!fetched && !loading && !!session.jwt) {
+      console.log(session);
+      fetchMyCoins();
+    }
+  }, [session, loading, fetched]);
+
+  useEffect(() => {
+    if (
+      initial &&
+      !!router.query.type &&
+      router.query.type !== orderType &&
+      (router.query.type === 'advert' || router.query.type === 'coin-promo')
+    ) {
+      setOrderType(router.query.type);
+      setInitial(false);
+    }
+  }, [initial, orderType, router]);
+
+  const orderOptions = [
+    { value: 'advert', label: 'Advertisement' },
+    { value: 'coin-promo', label: 'Coin Promotion' }
+  ];
+
+  const getValue = (value) => {
+    const selectedValue = orderOptions.filter((option) => option.value === value);
+    return selectedValue?.[0];
   };
+
+  const getNormalizedPackageOptions = (packageItem, attribute) => {
+    let items = [];
+    if (!!packageItem && !!packageItem[attribute]) {
+      items = packageItem[attribute].map((option) => ({
+        value: option.discount_percentage,
+        label: `${option.no_of_days} Days ${
+          !!option.discount_hint ? ` (${option.discount_hint})` : ''
+        }`
+      }));
+    }
+    return items;
+  };
+
+  const getNormalizedCoins = () => {
+    let items = [];
+    if (myCoins.length > 0) {
+      items = myCoins.map((option) => ({
+        value: option.id,
+        label: `${option.name} (${option.symbol})`
+      }));
+    }
+    return items;
+  };
+
+  const onSubmitHandler = async () => {
+    if (orderType === 'advert') {
+      // create advert
+      // create order
+    } else if (orderType === 'coin-promo') {
+      // create order
+      const orderPayload = {
+        type: 'Coin_Promotion',
+        orderItemText,
+        entityId: selectedCoin,
+        base_price: coinPromoPackage.basePrice,
+        discounted_price: price,
+        userNote: ''
+      };
+      const res = await createOrder(orderPayload, session.jwt);
+      if (!!res && !!res.id) {
+        setLoading(false);
+        notify('success', 'Success!', 'Your request is submitted!');
+        setTimeout(() => {
+          router.push('/auth/orders');
+        }, 500);
+      } else {
+        setLoading(false);
+        notify('danger', 'Error!', 'Invalid request! Please double check the details.');
+      }
+    }
+  };
+
+  console.log(accept, price, getNormalizedCoins(), myCoins);
 
   return (
     <>
@@ -62,256 +150,332 @@ const NewOrder = ({ pageData, error }) => {
       {/* Page content */}
       <Container className="mt--7" fluid>
         <Row>
-          <Col className="mb-5 mb-xl-0" xl="8">
-            <Card className="shadow">
-              <CardHeader className="bg-transparent">
-                <Row className="align-items-center">
+          <Col className="order-xl-2 mb-5 mb-xl-0" xl="4">
+            <Card className="card-profile shadow">
+              <CardBody className="pt-md-4">
+                <Row>
                   <div className="col">
-                    <h6 className="text-uppercase text-light ls-1 mb-1">NewOrder</h6>
-                    <h2 className="text-white mb-0">Sales value</h2>
-                  </div>
-                  <div className="col">
-                    <Nav className="justify-content-end" pills>
-                      <NavItem>
-                        <NavLink
-                          className={classnames('py-2 px-3', {
-                            active: activeNav === 1
-                          })}
-                          href="#"
-                          onClick={(e) => toggleNavs(e, 1)}
-                        >
-                          <span className="d-none d-md-block">Month</span>
-                          <span className="d-md-none">M</span>
-                        </NavLink>
-                      </NavItem>
-                      <NavItem>
-                        <NavLink
-                          className={classnames('py-2 px-3', {
-                            active: activeNav === 2
-                          })}
-                          data-toggle="tab"
-                          href="#"
-                          onClick={(e) => toggleNavs(e, 2)}
-                        >
-                          <span className="d-none d-md-block">Week</span>
-                          <span className="d-md-none">W</span>
-                        </NavLink>
-                      </NavItem>
-                    </Nav>
+                    {!!warningMessage && !!warningMessage.content && (
+                      <RichText content={warningMessage.content} />
+                    )}
                   </div>
                 </Row>
-              </CardHeader>
-              <CardBody>
-                {/* Chart */}
-                <div className="chart">
-                  <Line
-                    data={chartExample1[chartExample1Data]}
-                    options={chartExample1.options}
-                    getDatasetAtEvent={(e) => console.log(e)}
-                  />
-                </div>
               </CardBody>
             </Card>
           </Col>
-          <Col xl="4">
-            <Card className="shadow">
-              <CardHeader className="bg-transparent">
+          <Col className="order-xl-1" xl="8">
+            <Card className="bg-secondary shadow">
+              <CardHeader className="bg-white border-0">
                 <Row className="align-items-center">
-                  <div className="col">
-                    <h6 className="text-uppercase text-muted ls-1 mb-1">Performance</h6>
-                    <h2 className="mb-0">Total orders</h2>
-                  </div>
+                  <Col xs="8">
+                    <h2 className="my-2">{title}</h2>
+                  </Col>
                 </Row>
               </CardHeader>
               <CardBody>
-                {/* Chart */}
-                <div className="chart">
-                  <Bar data={chartExample2.data} options={chartExample2.options} />
+                <h6 className="heading-small text-muted mb-4">{subtitle}</h6>
+                <div className="p-3">
+                  <Row>
+                    {!!instructions && !!instructions.content && (
+                      <RichText content={instructions.content} />
+                    )}
+                  </Row>
+                </div>
+                <div className="p-3">
+                  <Row>{!!walletDetails && <RichText content={walletDetails} />}</Row>
+                </div>
+                <div className="py-3">
+                  <Form onSubmit={() => onSubmitHandler()}>
+                    <h6 className="heading-small text-muted mb-4">Order Type</h6>
+                    <div className="pl-lg-4">
+                      <Row>
+                        <Col lg="6">
+                          <FormGroup>
+                            <label
+                              className="form-control-label"
+                              htmlFor="input-username"
+                            >
+                              Choose *
+                            </label>
+                            <Select
+                              options={orderOptions}
+                              defaultInputValue={orderType}
+                              value={getValue(orderType)}
+                              onChange={(option) => {
+                                setOrderType(option.value);
+                                setPrice(0);
+                              }}
+                            />
+                          </FormGroup>
+                        </Col>
+                      </Row>
+                    </div>
+                    {orderType === 'advert' && (
+                      <>
+                        <hr className="my-4" />
+                        {/* Info */}
+                        <h6 className="heading-small text-muted mb-4">
+                          Advertisement Information
+                        </h6>
+                        <div className="pl-lg-4">
+                          <Row>
+                            <Col md="12">
+                              <FormGroup>
+                                <label
+                                  className="form-control-label"
+                                  htmlFor="link-input"
+                                >
+                                  Link *
+                                </label>
+                                <Input
+                                  className="form-control-alternative"
+                                  value={advertLink}
+                                  onChange={(e) => {
+                                    e.preventDefault();
+                                    setAdvertLink(e.target.value);
+                                  }}
+                                  id="link-input"
+                                  placeholder="https://youraffiliatelink.business"
+                                  type="text"
+                                />
+                              </FormGroup>
+                            </Col>
+                          </Row>
+                          <Row>
+                            <Col md="12">
+                              <FormGroup>
+                                <label
+                                  className="form-control-label"
+                                  htmlFor="banner-image-input"
+                                >
+                                  Banner *
+                                </label>
+                                <Input
+                                  className="form-control-alternative"
+                                  // disabled={formLoading}
+                                  //formNoValidate={formErrors.logo !== ''}
+                                  id="banner-image-input"
+                                  type="file"
+                                  onChange={(e) => {
+                                    e.preventDefault();
+                                    setBanner(e.target.files[0]);
+                                  }}
+                                ></Input>
+                                {/* {!!formErrors.logo && formErrors.logo !== '' && (
+                                <small className="text-orange">{formErrors.logo}</small>
+                              )} */}
+                              </FormGroup>
+                            </Col>
+                          </Row>
+                        </div>
+                        <hr className="my-4" />
+                        {/* Package */}
+                        <h6 className="heading-small text-muted mb-4">Select Package</h6>
+                        <div className="pl-lg-4">
+                          <Row>
+                            <Col md="12">
+                              <h2>Price: ${advertisementPackage.basePrice}</h2>
+                              <FormGroup>
+                                <label
+                                  className="form-control-label"
+                                  htmlFor="input-address"
+                                >
+                                  Choose *
+                                </label>
+                                <Select
+                                  options={getNormalizedPackageOptions(
+                                    advertisementPackage,
+                                    'priceOptions'
+                                  )}
+                                  // defaultInputValue={orderType}
+                                  onChange={(option) =>
+                                    setPrice(
+                                      advertisementPackage.basePrice *
+                                        (100 - option.value) *
+                                        0.01
+                                    )
+                                  }
+                                />
+                              </FormGroup>
+                            </Col>
+                          </Row>
+                        </div>
+                      </>
+                    )}
+                    {orderType === 'coin-promo' && (
+                      <>
+                        <hr className="my-4" />
+                        {/* Info */}
+                        <h6 className="heading-small text-muted mb-4">Select Coin</h6>
+                        <div className="pl-lg-4">
+                          <Row>
+                            <Col>
+                              {myCoins !== [] ? (
+                                <FormGroup>
+                                  <label
+                                    className="form-control-label"
+                                    htmlFor="input-address"
+                                  >
+                                    Choose *
+                                  </label>
+                                  <Select
+                                    options={getNormalizedCoins()}
+                                    // defaultInputValue={orderType}
+                                    onChange={(option) => {
+                                      setSelectedCoin(option.value);
+                                      const coin = myCoins.filter(
+                                        (coin) => coin.id === option.value
+                                      );
+                                      if (!!coin && coin.length > 0) {
+                                        setOrderItemText(
+                                          `Coin Promotion (${coin[0].name}) x 1`
+                                        );
+                                      }
+                                    }}
+                                  />
+                                </FormGroup>
+                              ) : (
+                                <h3>
+                                  You don't currently have any coin. Please submit your
+                                  coin through
+                                  <Link href="/auth/coins/new">here</Link>
+                                </h3>
+                              )}
+                            </Col>
+                          </Row>
+                        </div>
+                        <hr className="my-4" />
+                        {/* Package */}
+                        <h6 className="heading-small text-muted mb-4">Select Package</h6>
+                        <div className="pl-lg-4">
+                          <Row>
+                            <Col md="12">
+                              <FormGroup>
+                                <h2>Price: ${coinPromoPackage.basePrice}</h2>
+                                <label
+                                  className="form-control-label"
+                                  htmlFor="input-address"
+                                >
+                                  Choose *
+                                </label>
+                                <Select
+                                  options={getNormalizedPackageOptions(
+                                    coinPromoPackage,
+                                    'priceOptions'
+                                  )}
+                                  // defaultInputValue={orderType}
+                                  onChange={(option) =>
+                                    setPrice(
+                                      coinPromoPackage.basePrice *
+                                        (100 - option.value) *
+                                        0.01
+                                    )
+                                  }
+                                />
+                              </FormGroup>
+                            </Col>
+                          </Row>
+                        </div>
+                      </>
+                    )}
+                    {price !== 0 && (
+                      <>
+                        <hr className="my-4" />
+                        {/* Summary */}
+                        <h6 className="heading-small text-muted mb-4">Order Summary</h6>
+                        <div className="pl-lg-4">
+                          <Container>
+                            <Row>
+                              <Col xs="12" sm="4">
+                                <h4 className="mr-3">Item:</h4>
+                              </Col>
+                              <Col>
+                                <p className="text-muted">{orderItemText}</p>
+                              </Col>
+                            </Row>
+                            <Row>
+                              <Col xs="12" sm="4">
+                                <h4 className="mr-3">Price:</h4>
+                              </Col>
+                              <Col>
+                                <p className="text-muted">
+                                  {orderType === 'advert' &&
+                                    !!advertisementPackage &&
+                                    advertisementPackage.basePrice !== 0 &&
+                                    `$${advertisementPackage.basePrice}`}
+                                  {orderType === 'coin-promo' &&
+                                    !!coinPromoPackage &&
+                                    coinPromoPackage.basePrice !== 0 &&
+                                    `$${coinPromoPackage.basePrice}`}
+                                </p>
+                              </Col>
+                            </Row>
+                            <Row>
+                              <Col xs="12" sm="4">
+                                <h4 className="mr-3">Total:</h4>
+                              </Col>
+                              <Col>
+                                <h4 className="text-semibold">
+                                  {price !== 0 && `$${price}`}
+                                </h4>
+                              </Col>
+                            </Row>
+                          </Container>
+                        </div>
+                      </>
+                    )}
+                    {orderType !== '' && (
+                      <>
+                        <hr className="my-4" />
+                        {/* Submission */}
+                        <h6 className="heading-small text-muted mb-4">Confirm</h6>
+                        <div className="pl-lg-4">
+                          <FormGroup>
+                            <div
+                              className="custom-control custom-checkbox mb-3"
+                              style={{ zIndex: 0 }}
+                            >
+                              <input
+                                className=" custom-control-input"
+                                id="terms-checkbox"
+                                value={accept}
+                                onChange={() => setAccept(!accept)}
+                                type="checkbox"
+                                style={{ zIndex: 0 }}
+                              ></input>
+                              <label
+                                className="custom-control-label"
+                                htmlFor="terms-checkbox"
+                              >
+                                <span>
+                                  I accept the FinancialVotes{' '}
+                                  <Link href="/terms-and-conditions">
+                                    Terms and Conditions
+                                  </Link>
+                                  .
+                                </span>
+                              </label>
+                            </div>
+                            <Button
+                              className="my-4"
+                              //disabled={formLoading}
+                              color="primary"
+                              type="submit"
+                              // onClick={(e) => {
+                              //   e.preventDefault();
+                              //   handleSubmit();
+                              // }}
+                            >
+                              {/* {loading ? 'Loading...' : 'Submit'} */}
+                              Submit
+                            </Button>
+                          </FormGroup>
+                        </div>
+                      </>
+                    )}
+                  </Form>
                 </div>
               </CardBody>
-            </Card>
-          </Col>
-        </Row>
-        <Row className="mt-5">
-          <Col className="mb-5 mb-xl-0" xl="8">
-            <Card className="shadow">
-              <CardHeader className="border-0">
-                <Row className="align-items-center">
-                  <div className="col">
-                    <h3 className="mb-0">Page visits</h3>
-                  </div>
-                  <div className="col text-right">
-                    <Button
-                      color="primary"
-                      href="#"
-                      onClick={(e) => e.preventDefault()}
-                      size="sm"
-                    >
-                      See all
-                    </Button>
-                  </div>
-                </Row>
-              </CardHeader>
-              <Table className="align-items-center table-flush" responsive>
-                <thead className="thead-light">
-                  <tr>
-                    <th scope="col">Page name</th>
-                    <th scope="col">Visitors</th>
-                    <th scope="col">Unique users</th>
-                    <th scope="col">Bounce rate</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <th scope="row">/argon/</th>
-                    <td>4,569</td>
-                    <td>340</td>
-                    <td>
-                      <i className="fas fa-arrow-up text-success mr-3" /> 46,53%
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">/argon/index.html</th>
-                    <td>3,985</td>
-                    <td>319</td>
-                    <td>
-                      <i className="fas fa-arrow-down text-warning mr-3" /> 46,53%
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">/argon/charts.html</th>
-                    <td>3,513</td>
-                    <td>294</td>
-                    <td>
-                      <i className="fas fa-arrow-down text-warning mr-3" /> 36,49%
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">/argon/tables.html</th>
-                    <td>2,050</td>
-                    <td>147</td>
-                    <td>
-                      <i className="fas fa-arrow-up text-success mr-3" /> 50,87%
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">/argon/profile.html</th>
-                    <td>1,795</td>
-                    <td>190</td>
-                    <td>
-                      <i className="fas fa-arrow-down text-danger mr-3" /> 46,53%
-                    </td>
-                  </tr>
-                </tbody>
-              </Table>
-            </Card>
-          </Col>
-          <Col xl="4">
-            <Card className="shadow">
-              <CardHeader className="border-0">
-                <Row className="align-items-center">
-                  <div className="col">
-                    <h3 className="mb-0">Social traffic</h3>
-                  </div>
-                  <div className="col text-right">
-                    <Button
-                      color="primary"
-                      href="#"
-                      onClick={(e) => e.preventDefault()}
-                      size="sm"
-                    >
-                      See all
-                    </Button>
-                  </div>
-                </Row>
-              </CardHeader>
-              <Table className="align-items-center table-flush" responsive>
-                <thead className="thead-light">
-                  <tr>
-                    <th scope="col">Referral</th>
-                    <th scope="col">Visitors</th>
-                    <th scope="col" />
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <th scope="row">Facebook</th>
-                    <td>1,480</td>
-                    <td>
-                      <div className="d-flex align-items-center">
-                        <span className="mr-2">60%</span>
-                        <div>
-                          <Progress
-                            max="100"
-                            value="60"
-                            barClassName="bg-gradient-danger"
-                          />
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Facebook</th>
-                    <td>5,480</td>
-                    <td>
-                      <div className="d-flex align-items-center">
-                        <span className="mr-2">70%</span>
-                        <div>
-                          <Progress
-                            max="100"
-                            value="70"
-                            barClassName="bg-gradient-success"
-                          />
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Google</th>
-                    <td>4,807</td>
-                    <td>
-                      <div className="d-flex align-items-center">
-                        <span className="mr-2">80%</span>
-                        <div>
-                          <Progress max="100" value="80" />
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Instagram</th>
-                    <td>3,678</td>
-                    <td>
-                      <div className="d-flex align-items-center">
-                        <span className="mr-2">75%</span>
-                        <div>
-                          <Progress
-                            max="100"
-                            value="75"
-                            barClassName="bg-gradient-info"
-                          />
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">twitter</th>
-                    <td>2,645</td>
-                    <td>
-                      <div className="d-flex align-items-center">
-                        <span className="mr-2">30%</span>
-                        <div>
-                          <Progress
-                            max="100"
-                            value="30"
-                            barClassName="bg-gradient-warning"
-                          />
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </Table>
             </Card>
           </Col>
         </Row>

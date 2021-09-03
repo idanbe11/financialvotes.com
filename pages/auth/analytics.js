@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/client';
 // node.js library that concatenates classes (strings)
 import classnames from 'classnames';
+import Select from 'react-select';
 // javascipt plugin for creating charts
 import Chart from 'chart.js';
 // react plugin used to create charts
@@ -27,14 +29,101 @@ import {
   chartOptions,
   parseOptions,
   chartExample1,
-  chartExample2
+  chartExample2,
+  createPrimaryChartData,
+  createSecondaryChartData
 } from 'variables/charts.js';
 
-import AuthHeader from 'components/Headers/StatsAuthHeader';
+import AnalyticsHeader from 'components/Analytics/AnalyticsHeader';
+import { getAnalyticsReport, getMyOrders } from 'lib/api';
+
+const reportData = {
+  primary: {
+    clicks: [],
+    views: []
+  },
+  secondary: [],
+  sources: [],
+  osInfo: [],
+  summary: {
+    engagements: 0,
+    views: 0,
+    clicks: 0,
+    conversion: 0.0
+  }
+};
+
+const options = [
+  { value: 'id-1', label: 'Advert (2021-08-13)' },
+  { value: 'id-2', label: 'Advert (2021-08-14)' },
+  { value: 'id-3', label: 'Advert (2021-08-15)' }
+];
 
 const Analytics = (props) => {
-  const [activeNav, setActiveNav] = React.useState(1);
-  const [chartExample1Data, setChartExample1Data] = React.useState('data1');
+  const [activeNav, setActiveNav] = useState(1);
+  const [primaryChartKey, setPrimaryChartKey] = useState('clicks');
+  const [primaryChartData, setPrimaryChartData] = useState(undefined);
+  const [secondaryChartData, setSecondaryChartData] = useState(undefined);
+
+  const [adId, setAdId] = useState('');
+  const [loadings, setLoadings] = useState({
+    orders: false,
+    analytics: false
+  });
+  const [myOrders, setMyOrders] = useState([]);
+  const [analyticsData, setAnalyticsData] = useState(undefined);
+  const [ordersFetched, setOrdersFetched] = useState(false);
+  const [analyticsDataFetched, setAnalyticsDataFetched] = useState(false);
+
+  const [session, loading] = useSession();
+
+  useEffect(() => {
+    const fetchMyOrders = async () => {
+      setLoadings({
+        ...loadings,
+        orders: true
+      });
+      const data = await getMyOrders(session.jwt);
+      const ads = data.filter((elem) => elem.type === 'Advert');
+      if (Array.isArray(ads) && ads.length > 0) {
+        setAdId(ads[0].id);
+      }
+      setMyOrders(ads);
+      setLoadings({
+        ...loadings,
+        orders: false
+      });
+      setOrdersFetched(true);
+    };
+    const fetchAnalyticsReport = async () => {
+      setLoadings({
+        ...loadings,
+        analytics: true
+      });
+      const data = await getAnalyticsReport(adId, session.jwt);
+      setAnalyticsData(data);
+      setPrimaryChartData(createPrimaryChartData(data['primary']));
+      setSecondaryChartData(createSecondaryChartData(data['secondary']));
+      setLoadings({
+        ...loadings,
+        analytics: false
+      });
+      setAnalyticsDataFetched(true);
+    };
+    if (!loading && !loadings.orders && !ordersFetched) {
+      fetchMyOrders();
+    }
+    if (
+      !loading &&
+      !loadings.analytics &&
+      ordersFetched &&
+      !analyticsDataFetched &&
+      adId !== '' &&
+      analyticsData === undefined
+    ) {
+      fetchAnalyticsReport();
+    }
+  }, [session, loading, loadings, ordersFetched, analyticsDataFetched, adId]);
 
   if (window.Chart) {
     parseOptions(Chart, chartOptions());
@@ -43,13 +132,36 @@ const Analytics = (props) => {
   const toggleNavs = (e, index) => {
     e.preventDefault();
     setActiveNav(index);
-    setChartExample1Data('data' + index);
+    if (index === 1) {
+      setPrimaryChartKey('clicks');
+    } else if (index === 2) {
+      setPrimaryChartKey('views');
+    }
   };
+
+  console.log(primaryChartData);
+
   return (
     <>
-      <AuthHeader />
+      <AnalyticsHeader data={!!analyticsData && analyticsData.summary} />
       {/* Page content */}
       <Container className="mt--7" fluid>
+        <Row>
+          <Col className="mb-5 mb-xl-3">
+            <Card className="shadow">
+              <CardHeader className="bg-transparent">
+                <Row className="align-items-center">
+                  <div className="col mb-xs-3">
+                    <h2 className="mb-0">Advertisement:</h2>
+                  </div>
+                  <div className="col-md-6 col-xs-12">
+                    <Select options={options} />
+                  </div>
+                </Row>
+              </CardHeader>
+            </Card>
+          </Col>
+        </Row>
         <Row>
           <Col className="mb-5 mb-xl-0" xl="8">
             <Card className="shadow">
@@ -57,7 +169,7 @@ const Analytics = (props) => {
                 <Row className="align-items-center">
                   <div className="col">
                     <h6 className="text-uppercase text-light ls-1 mb-1">Analytics</h6>
-                    <h2 className="text-white mb-0">Sales value</h2>
+                    <h2 className="text-muted mb-0">{`Engagements & Activities`}</h2>
                   </div>
                   <div className="col">
                     <Nav className="justify-content-end" pills>
@@ -69,8 +181,8 @@ const Analytics = (props) => {
                           href="#"
                           onClick={(e) => toggleNavs(e, 1)}
                         >
-                          <span className="d-none d-md-block">Month</span>
-                          <span className="d-md-none">M</span>
+                          <span className="d-none d-md-block">Clicks</span>
+                          <span className="d-md-none">C</span>
                         </NavLink>
                       </NavItem>
                       <NavItem>
@@ -82,8 +194,8 @@ const Analytics = (props) => {
                           href="#"
                           onClick={(e) => toggleNavs(e, 2)}
                         >
-                          <span className="d-none d-md-block">Week</span>
-                          <span className="d-md-none">W</span>
+                          <span className="d-none d-md-block">Views</span>
+                          <span className="d-md-none">V</span>
                         </NavLink>
                       </NavItem>
                     </Nav>
@@ -92,13 +204,34 @@ const Analytics = (props) => {
               </CardHeader>
               <CardBody>
                 {/* Chart */}
-                <div className="chart">
-                  <Line
-                    data={chartExample1[chartExample1Data]}
-                    options={chartExample1.options}
-                    getDatasetAtEvent={(e) => console.log(e)}
-                  />
-                </div>
+                {loading || loadings.analytics || !analyticsDataFetched ? (
+                  <Row>
+                    <Col>
+                      <div className="text-center">
+                        <h4 className="text-teal">Please wait...</h4>
+                      </div>
+                    </Col>
+                  </Row>
+                ) : !loadings.analytics &&
+                  analyticsDataFetched === true &&
+                  !!analyticsData &&
+                  analyticsData.primary.views.length > 1 ? (
+                  <div className="chart">
+                    <Line
+                      data={primaryChartData[primaryChartKey]}
+                      options={primaryChartData.options}
+                      getDatasetAtEvent={(e) => console.log(e)}
+                    />
+                  </div>
+                ) : (
+                  <Row>
+                    <Col>
+                      <div className="text-center">
+                        <h4 className="text-teal">Insufficient data!</h4>
+                      </div>
+                    </Col>
+                  </Row>
+                )}
               </CardBody>
             </Card>
           </Col>
@@ -108,15 +241,40 @@ const Analytics = (props) => {
                 <Row className="align-items-center">
                   <div className="col">
                     <h6 className="text-uppercase text-muted ls-1 mb-1">Performance</h6>
-                    <h2 className="mb-0">Total orders</h2>
+                    <h2 className="mb-0">Total Engagements</h2>
                   </div>
                 </Row>
               </CardHeader>
               <CardBody>
                 {/* Chart */}
-                <div className="chart">
-                  <Bar data={chartExample2.data} options={chartExample2.options} />
-                </div>
+                {loading || loadings.analytics || !analyticsDataFetched ? (
+                  <Row>
+                    <Col>
+                      <div className="text-center">
+                        <h4 className="text-teal">Please wait...</h4>
+                      </div>
+                    </Col>
+                  </Row>
+                ) : !loadings.analytics &&
+                  analyticsDataFetched === true &&
+                  !!analyticsData &&
+                  analyticsData.secondary.length > 1 ? (
+                  <div className="chart">
+                    <Bar
+                      data={secondaryChartData.data}
+                      options={secondaryChartData.options}
+                      getDatasetAtEvent={(e) => console.log(e)}
+                    />
+                  </div>
+                ) : (
+                  <Row>
+                    <Col>
+                      <div className="text-center">
+                        <h4 className="text-teal">Insufficient data!</h4>
+                      </div>
+                    </Col>
+                  </Row>
+                )}
               </CardBody>
             </Card>
           </Col>
@@ -127,72 +285,54 @@ const Analytics = (props) => {
               <CardHeader className="border-0">
                 <Row className="align-items-center">
                   <div className="col">
-                    <h3 className="mb-0">Page visits</h3>
-                  </div>
-                  <div className="col text-right">
-                    <Button
-                      color="primary"
-                      href="#"
-                      onClick={(e) => e.preventDefault()}
-                      size="sm"
-                    >
-                      See all
-                    </Button>
+                    <h3 className="mb-0">Sources</h3>
                   </div>
                 </Row>
               </CardHeader>
-              <Table className="align-items-center table-flush" responsive>
-                <thead className="thead-light">
-                  <tr>
-                    <th scope="col">Page name</th>
-                    <th scope="col">Visitors</th>
-                    <th scope="col">Unique users</th>
-                    <th scope="col">Bounce rate</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <th scope="row">/argon/</th>
-                    <td>4,569</td>
-                    <td>340</td>
-                    <td>
-                      <i className="fas fa-arrow-up text-success mr-3" /> 46,53%
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">/argon/index.html</th>
-                    <td>3,985</td>
-                    <td>319</td>
-                    <td>
-                      <i className="fas fa-arrow-down text-warning mr-3" /> 46,53%
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">/argon/charts.html</th>
-                    <td>3,513</td>
-                    <td>294</td>
-                    <td>
-                      <i className="fas fa-arrow-down text-warning mr-3" /> 36,49%
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">/argon/tables.html</th>
-                    <td>2,050</td>
-                    <td>147</td>
-                    <td>
-                      <i className="fas fa-arrow-up text-success mr-3" /> 50,87%
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">/argon/profile.html</th>
-                    <td>1,795</td>
-                    <td>190</td>
-                    <td>
-                      <i className="fas fa-arrow-down text-danger mr-3" /> 46,53%
-                    </td>
-                  </tr>
-                </tbody>
-              </Table>
+              {loading || loadings.analytics || !analyticsDataFetched ? (
+                <CardBody>
+                  <Row>
+                    <Col>
+                      <div className="text-center">
+                        <h4 className="text-teal">Please wait...</h4>
+                      </div>
+                    </Col>
+                  </Row>
+                </CardBody>
+              ) : !loadings.analytics &&
+                analyticsDataFetched === true &&
+                analyticsData.sources.length > 0 ? (
+                <Table className="align-items-center table-flush" responsive>
+                  <thead className="thead-light">
+                    <tr>
+                      <th scope="col">name</th>
+                      <th scope="col">Views</th>
+                      <th scope="col">Clicks</th>
+                      <th scope="col">Conversion rate</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {analyticsData.sources.map((entity, index) => (
+                      <tr key={index}>
+                        <th scope="row">{entity.path}</th>
+                        <td>{entity.views}</td>
+                        <td>{entity.clicks}</td>
+                        <td>{entity.conversion}%</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              ) : (
+                <CardBody>
+                  <Row>
+                    <Col>
+                      <div className="text-center">
+                        <h4 className="text-teal">Insufficient data!</h4>
+                      </div>
+                    </Col>
+                  </Row>
+                </CardBody>
+              )}
             </Card>
           </Col>
           <Col xl="4">
@@ -200,9 +340,9 @@ const Analytics = (props) => {
               <CardHeader className="border-0">
                 <Row className="align-items-center">
                   <div className="col">
-                    <h3 className="mb-0">Social traffic</h3>
+                    <h3 className="mb-0">OS Info</h3>
                   </div>
-                  <div className="col text-right">
+                  {/* <div className="col text-right">
                     <Button
                       color="primary"
                       href="#"
@@ -211,96 +351,60 @@ const Analytics = (props) => {
                     >
                       See all
                     </Button>
-                  </div>
+                  </div> */}
                 </Row>
               </CardHeader>
-              <Table className="align-items-center table-flush" responsive>
-                <thead className="thead-light">
-                  <tr>
-                    <th scope="col">Referral</th>
-                    <th scope="col">Visitors</th>
-                    <th scope="col" />
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <th scope="row">Facebook</th>
-                    <td>1,480</td>
-                    <td>
-                      <div className="d-flex align-items-center">
-                        <span className="mr-2">60%</span>
-                        <div>
-                          <Progress
-                            max="100"
-                            value="60"
-                            barClassName="bg-gradient-danger"
-                          />
-                        </div>
+              {loading || loadings.analytics || !analyticsDataFetched ? (
+                <CardBody>
+                  <Row>
+                    <Col>
+                      <div className="text-center">
+                        <h4 className="text-teal">Please wait...</h4>
                       </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Facebook</th>
-                    <td>5,480</td>
-                    <td>
-                      <div className="d-flex align-items-center">
-                        <span className="mr-2">70%</span>
-                        <div>
-                          <Progress
-                            max="100"
-                            value="70"
-                            barClassName="bg-gradient-success"
-                          />
-                        </div>
+                    </Col>
+                  </Row>
+                </CardBody>
+              ) : !loadings.analytics &&
+                analyticsDataFetched === true &&
+                analyticsData.osInfo.length > 0 ? (
+                <Table className="align-items-center table-flush" responsive>
+                  <thead className="thead-light">
+                    <tr>
+                      <th scope="col">OS Name</th>
+                      <th scope="col">Conversion Rate</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {analyticsData.osInfo.map((entity, index) => (
+                      <tr key={index}>
+                        <th scope="row">{entity.name}</th>
+                        <td>
+                          <div className="d-flex align-items-center">
+                            <span className="mr-2">{entity.rate}%</span>
+                            <div>
+                              <Progress
+                                max="100"
+                                value={entity.rate}
+                                barClassName="bg-gradient-danger"
+                              />
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              ) : (
+                <CardBody>
+                  <Row>
+                    <Col>
+                      <div className="text-center">
+                        <h4 className="text-teal">Insufficient data!</h4>
                       </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Google</th>
-                    <td>4,807</td>
-                    <td>
-                      <div className="d-flex align-items-center">
-                        <span className="mr-2">80%</span>
-                        <div>
-                          <Progress max="100" value="80" />
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Instagram</th>
-                    <td>3,678</td>
-                    <td>
-                      <div className="d-flex align-items-center">
-                        <span className="mr-2">75%</span>
-                        <div>
-                          <Progress
-                            max="100"
-                            value="75"
-                            barClassName="bg-gradient-info"
-                          />
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">twitter</th>
-                    <td>2,645</td>
-                    <td>
-                      <div className="d-flex align-items-center">
-                        <span className="mr-2">30%</span>
-                        <div>
-                          <Progress
-                            max="100"
-                            value="30"
-                            barClassName="bg-gradient-warning"
-                          />
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </Table>
+                    </Col>
+                  </Row>
+                </CardBody>
+              )}
             </Card>
           </Col>
         </Row>
