@@ -11,15 +11,17 @@ import {
   CardBody,
   CardHeader,
   CardTitle,
-  Col,
   Container,
-  Row
+  Row,
+  Col,
+  Spinner
 } from 'reactstrap';
 import * as _ from 'lodash';
 import NotificationAlert from 'react-notification-alert';
 import Guest from 'layouts/Guest';
 import { getCoinBySlug, getAllCoinSlugs, voteForCoin } from 'lib/api';
 import Modal from 'components/Elements/Modal';
+import Advertisement from 'components/Advertisement/Advertisement';
 
 const CoinSidebar = ({
   links,
@@ -40,6 +42,7 @@ const CoinSidebar = ({
     in_coingecko &&
     !!links.telegram_channel_identifier &&
     'https://t.me/' + links.telegram_channel_identifier;
+
   // console.log(
   //   'CoinSidebar',
   //   quote,
@@ -50,6 +53,7 @@ const CoinSidebar = ({
   //   cg_twitter_link,
   //   !!quote && !!quote.market_cap
   // );
+
   return (
     <Col md="12" lg="4" xl="3">
       <Row>
@@ -260,7 +264,7 @@ const CoinSidebar = ({
   );
 };
 
-const Coin = ({ coin }) => {
+const Coin = ({ coin, error }) => {
   // console.log(coin);
   const {
     logo,
@@ -281,6 +285,7 @@ const Coin = ({ coin }) => {
   const notificationAlertRef = useRef();
   const [voteConfirm, setVoteModalConfirm] = useState(false);
   const [initial, setInitial] = useState(true);
+  const [voteReqLoading, setVoteReqLoading] = useState(false);
 
   useEffect(() => {
     if (initial && !!router.query.vote && router.query.vote !== voteConfirm) {
@@ -308,7 +313,7 @@ const Coin = ({ coin }) => {
   };
 
   if (!router.isFallback && !coin?.slug) {
-    return <ErrorPage statusCode={404} />;
+    router.push('/404');
   }
 
   if (router.isFallback) {
@@ -335,20 +340,38 @@ const Coin = ({ coin }) => {
       <Modal
         title={'Please confirm to continue'}
         content={
-          'Are you sure you want to vote this coin? You can only vote a coin per day.'
+          'Are you sure you want to vote this coin? You can only vote one time per one coin within 24 hours.'
         }
         action={async () => {
-          const res = await voteForCoin(coin.id, session.jwt);
-          if (typeof res === 'string') {
-            notify('danger', res);
+          if (!!session) {
+            setVoteReqLoading(true);
+            const res = await voteForCoin(coin.id, session.jwt);
+            if (typeof res === 'string') {
+              setVoteReqLoading(false);
+              notify('danger', res);
+            } else {
+              setVoteReqLoading(false);
+              notify('success', 'Your vote has been submitted!');
+            }
+            setVoteModalConfirm(!voteConfirm);
           } else {
-            notify('success', 'Your vote has been submitted!');
+            router.push('/auth/login');
           }
-          setVoteModalConfirm(!voteConfirm);
         }}
         actionText="Confirm"
         show={voteConfirm}
         toggle={() => setVoteModalConfirm(!voteConfirm)}
+        loading={voteReqLoading}
+        loaderComponent={
+          <div className="container align-items-center mb-5">
+            <Row className="m-5 p-5">
+              <Col className="text-center">
+                Please wait...
+                <Spinner className="mx-3" size="sm" color="info" />
+              </Col>
+            </Row>
+          </div>
+        }
       />
       <Row>
         <Col className=" ml-auto" md="12" lg="8" xl="9">
@@ -435,27 +458,51 @@ const Coin = ({ coin }) => {
           telegram_link={telegram_link}
         />
       </Row>
+      <Row>
+        <div className="col-12 col-md-6 col-lg-6">
+          <h1>FinancialVotes.com</h1>
+          <h2 className="title">All Round Best Coins</h2>
+          <h3>Most voted coins all time around the globe</h3>
+        </div>
+        <div className="col-lg-6 col-12">
+          <Advertisement source={`Coin - ${name}`} />
+        </div>
+      </Row>
     </Container>
   );
 };
 
-export async function getStaticProps({ params }) {
-  const data = await getCoinBySlug(params.slug);
-  // console.log(data);
-  return {
-    props: {
-      coin: data
-    }
-  };
+export async function getServerSideProps({ params }) {
+  try {
+    const data = await getCoinBySlug(params.slug);
+    console.log(data);
+    return {
+      props: {
+        coin: data
+      }
+    };
+  } catch (error) {
+    return { error };
+  }
 }
 
-export async function getStaticPaths() {
-  const slugs = await getAllCoinSlugs();
-  return {
-    paths: slugs?.map((slug) => `/coins/${slug}`) || [],
-    fallback: false
-  };
-}
+// export async function getStaticProps({ params }) {
+//   const data = await getCoinBySlug(params.slug);
+//   // console.log(data);
+//   return {
+//     props: {
+//       coin: data
+//     }
+//   };
+// }
+
+// export async function getStaticPaths() {
+//   const slugs = await getAllCoinSlugs();
+//   return {
+//     paths: slugs?.map((slug) => `/coins/${slug}`) || [],
+//     fallback: false
+//   };
+// }
 
 Coin.layout = Guest;
 

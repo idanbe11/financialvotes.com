@@ -9,7 +9,6 @@ import Chart from 'chart.js';
 import { Line, Bar } from 'react-chartjs-2';
 // reactstrap components
 import {
-  Button,
   Card,
   CardHeader,
   CardBody,
@@ -20,44 +19,37 @@ import {
   Table,
   Container,
   Row,
-  Col
+  Col,
+  Spinner
 } from 'reactstrap';
-// layout for this page
-import Auth from 'layouts/Auth';
+import moment from 'moment';
 // core components
 import {
   chartOptions,
   parseOptions,
-  chartExample1,
-  chartExample2,
   createPrimaryChartData,
   createSecondaryChartData
 } from 'variables/charts.js';
-
+// layout for this page
+import Auth from 'layouts/Auth';
 import AnalyticsHeader from 'components/Analytics/AnalyticsHeader';
-import { getAnalyticsReport, getMyOrders } from 'lib/api';
+import { getAnalyticsReport, getMyAdvertOrders } from 'lib/api';
 
-const reportData = {
-  primary: {
-    clicks: [],
-    views: []
-  },
-  secondary: [],
-  sources: [],
-  osInfo: [],
-  summary: {
-    engagements: 0,
-    views: 0,
-    clicks: 0,
-    conversion: 0.0
-  }
-};
-
-const options = [
-  { value: 'id-1', label: 'Advert (2021-08-13)' },
-  { value: 'id-2', label: 'Advert (2021-08-14)' },
-  { value: 'id-3', label: 'Advert (2021-08-15)' }
-];
+// const reportData = {
+//   primary: {
+//     clicks: [],
+//     views: []
+//   },
+//   secondary: [],
+//   sources: [],
+//   osInfo: [],
+//   summary: {
+//     engagements: 0,
+//     views: 0,
+//     clicks: 0,
+//     conversion: 0.0
+//   }
+// };
 
 const Analytics = (props) => {
   const [activeNav, setActiveNav] = useState(1);
@@ -70,11 +62,11 @@ const Analytics = (props) => {
     orders: false,
     analytics: false
   });
-  const [myOrders, setMyOrders] = useState([]);
+  const [myAdvertOrders, setMyAdvertOrders] = useState([]);
   const [analyticsData, setAnalyticsData] = useState(undefined);
   const [ordersFetched, setOrdersFetched] = useState(false);
   const [analyticsDataFetched, setAnalyticsDataFetched] = useState(false);
-
+  const [selectorOptions, setOptions] = useState([]);
   const [session, loading] = useSession();
 
   useEffect(() => {
@@ -83,24 +75,36 @@ const Analytics = (props) => {
         ...loadings,
         orders: true
       });
-      const data = await getMyOrders(session.jwt);
-      const ads = data.filter((elem) => elem.type === 'Advert');
-      if (Array.isArray(ads) && ads.length > 0) {
-        setAdId(ads[0].id);
+
+      const data = await getMyAdvertOrders(session.jwt);
+
+      if (Array.isArray(data) && data.length > 0) {
+        setAdId(data[0].entityId);
+        const optionsData = data.map((item) => {
+          return {
+            value: item.entityId,
+            label: `${item.type} ${moment(item.created).format('DD-MM-YYYY')}`
+          };
+        });
+        setOptions(optionsData);
       }
-      setMyOrders(ads);
+
+      setMyAdvertOrders(data);
       setLoadings({
         ...loadings,
         orders: false
       });
       setOrdersFetched(true);
     };
+
     const fetchAnalyticsReport = async () => {
       setLoadings({
         ...loadings,
         analytics: true
       });
+
       const data = await getAnalyticsReport(adId, session.jwt);
+
       setAnalyticsData(data);
       setPrimaryChartData(createPrimaryChartData(data['primary']));
       setSecondaryChartData(createSecondaryChartData(data['secondary']));
@@ -110,9 +114,11 @@ const Analytics = (props) => {
       });
       setAnalyticsDataFetched(true);
     };
+
     if (!loading && !loadings.orders && !ordersFetched) {
       fetchMyOrders();
     }
+
     if (
       !loading &&
       !loadings.analytics &&
@@ -139,7 +145,12 @@ const Analytics = (props) => {
     }
   };
 
-  console.log(primaryChartData);
+  const getValue = (value) => {
+    const selectedValue = selectorOptions.filter((option) => option.value === value);
+    return selectedValue?.[0];
+  };
+
+  // console.log(primaryChartData, myAdvertOrders);
 
   return (
     <>
@@ -155,7 +166,28 @@ const Analytics = (props) => {
                     <h2 className="mb-0">Advertisement:</h2>
                   </div>
                   <div className="col-md-6 col-xs-12">
-                    <Select options={options} />
+                    {loadings.orders || loadings.analytics || loading ? (
+                      <div className="container align-items-center">
+                        <Row>
+                          <Col className="text-center">
+                            Please wait...
+                            <Spinner className="mx-5" size="sm" color="info" />
+                          </Col>
+                        </Row>
+                      </div>
+                    ) : (
+                      <Select
+                        options={selectorOptions}
+                        value={getValue(adId)}
+                        onChange={(option) => {
+                          if (adId !== option.value) {
+                            setAdId(option.value);
+                            setAnalyticsData(undefined);
+                            setAnalyticsDataFetched(false);
+                          }
+                        }}
+                      />
+                    )}
                   </div>
                 </Row>
               </CardHeader>
@@ -220,7 +252,7 @@ const Analytics = (props) => {
                     <Line
                       data={primaryChartData[primaryChartKey]}
                       options={primaryChartData.options}
-                      getDatasetAtEvent={(e) => console.log(e)}
+                      // getDatasetAtEvent={(e) => console.log(e)}
                     />
                   </div>
                 ) : (
@@ -263,7 +295,7 @@ const Analytics = (props) => {
                     <Bar
                       data={secondaryChartData.data}
                       options={secondaryChartData.options}
-                      getDatasetAtEvent={(e) => console.log(e)}
+                      // getDatasetAtEvent={(e) => console.log(e)}
                     />
                   </div>
                 ) : (

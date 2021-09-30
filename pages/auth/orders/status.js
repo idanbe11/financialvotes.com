@@ -10,14 +10,13 @@ import {
   Container,
   Row,
   Col,
-  Form,
-  Input,
-  FormGroup
+  Badge
 } from 'reactstrap';
+import moment from 'moment';
+import classNames from 'classnames';
 // layout for this page
 import Auth from 'layouts/Auth';
 import AuthHeader from 'components/Headers/AuthHeader';
-import RichText from 'components/Elements/RichText';
 import { getOneOrder } from 'lib/api';
 
 const order = {
@@ -42,26 +41,7 @@ const OrderStatus = ({ pageData, error }) => {
   const [orderData, setOrderData] = useState({});
   const [session, loading] = useSession();
 
-  console.log(router.query, orderId, orderData);
-
-  if (!initial && fetched) {
-    router.push('/auth/overview');
-    return <div />;
-  }
-
-  // useEffect(() => {
-  //   const fetchOrder = async (id) => {
-  //     const data = await getOneOrder(id, session.jwt);
-  //     console.log(data);
-  //     setOrderData(data);
-  //     setFetched(true);
-  //     setLoading(false);
-  //   };
-  //   if (!fetched && !loading && !initial && !!session.jwt && orderId !== '') {
-  //     setLoading(true);
-  //     fetchOrder(orderId);
-  //   }
-  // }, [session, loading, fetched]);
+  // console.log(router.query, orderId, orderData);
 
   useEffect(() => {
     if (initial && !!router.query.ref && router.query.ref !== '') {
@@ -69,6 +49,19 @@ const OrderStatus = ({ pageData, error }) => {
       setInitial(false);
     }
   }, [initial, router]);
+
+  useEffect(() => {
+    const fetchOrder = async (id) => {
+      const data = await getOneOrder(id, session.jwt);
+      setOrderData(data);
+      setFetched(true);
+      setLoading(false);
+    };
+    if (!fetched && !loading && !initial && !!session.jwt && orderId !== '') {
+      setLoading(true);
+      fetchOrder(orderId);
+    }
+  }, [session, loading, fetched, orderId]);
 
   if (!initial && dataLoading) {
     return (
@@ -86,6 +79,11 @@ const OrderStatus = ({ pageData, error }) => {
     );
   }
 
+  if (!initial && fetched && orderData === {}) {
+    router.push('/auth/overview');
+    return <div />;
+  }
+
   return (
     <>
       <AuthHeader />
@@ -98,9 +96,66 @@ const OrderStatus = ({ pageData, error }) => {
                 <Row>
                   <div className="col">
                     {/* Order Metas? */}
-                    {/* {!!warningMessage && !!warningMessage.content && (
-                      <RichText content={warningMessage.content} />
-                    )} */}
+                    {orderData !== {} && !!orderData.type && (
+                      <>
+                        <Row>
+                          <Col>
+                            <h4 className="text-teal">Order ({order.id})</h4>
+                          </Col>
+                          <Col>
+                            {orderData.type === 'Advert' && (
+                              <Badge color="warning">Advertisement</Badge>
+                            )}
+                            {orderData.type === 'Coin_Promotion' && (
+                              <Badge color="warning">Coin Promotion</Badge>
+                            )}
+                          </Col>
+                        </Row>
+                        <Row>
+                          <div className="container my-2">
+                            <Row className="mt-2">
+                              <Col>
+                                <h4>
+                                  Order Status:
+                                  <span
+                                    className={classNames(
+                                      'mx-2',
+                                      {
+                                        'text-success': orderData.status === 'Completed'
+                                      },
+                                      { 'text-info': orderData.status === 'Pending' },
+                                      { 'text-danger': orderData.status === 'Canceled' }
+                                    )}
+                                  >
+                                    {orderData.status}
+                                  </span>
+                                </h4>
+                              </Col>
+                            </Row>
+                            <Row>
+                              <Col sm={12} md={6} lg={12}>
+                                <small>
+                                  Placed: {moment(orderData.createdAt).format('llll')}
+                                </small>
+                              </Col>
+                              <Col sm={12} md={6} lg={12}>
+                                <small>
+                                  Updated: {moment(orderData.updatedAt).fromNow()}
+                                </small>
+                              </Col>
+                            </Row>
+                            {!!orderData.userNote && orderData.userNote !== '' && (
+                              <Row className="mt-3">
+                                <Col>
+                                  <h4>Order Note:</h4>
+                                  <p>{orderData.userNote}</p>
+                                </Col>
+                              </Row>
+                            )}
+                          </div>
+                        </Row>
+                      </>
+                    )}
                   </div>
                 </Row>
               </CardBody>
@@ -111,18 +166,99 @@ const OrderStatus = ({ pageData, error }) => {
               <CardHeader className="bg-white border-0">
                 <Row className="align-items-center">
                   <Col xs="8">
-                    <h2 className="my-2">{'title'}</h2>
+                    <h2 className="my-2">Order Details</h2>
                   </Col>
                 </Row>
               </CardHeader>
               <CardBody>
-                <h6 className="heading-small text-muted mb-4">{'subtitle'}</h6>
                 <div className="p-3">
                   <Row>
-                    {/* {!!instructions && !!instructions.content && (
-                      <RichText content={instructions.content} />
-                    )} */}
+                    <Col>
+                      <p className="heading">{orderData.orderItemText}</p>
+                    </Col>
+                    <Col className="text-right">
+                      <h4>x {orderData.quantity}</h4>
+                    </Col>
                   </Row>
+                  <hr className="my-2" />
+                  <Row>
+                    <Col>
+                      <p>Unit price</p>
+                    </Col>
+                    <Col className="text-right">
+                      <h4>
+                        {Intl.NumberFormat('en-US', {
+                          style: 'currency',
+                          currency: 'USD'
+                        }).format(orderData.base_price)}
+                      </h4>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col>
+                      <p>
+                        Discount (
+                        <span className="text-muted small">{orderData.discount}%</span>)
+                      </p>
+                    </Col>
+                    <Col className="text-right">
+                      <h4>
+                        {Intl.NumberFormat('en-US', {
+                          style: 'currency',
+                          currency: 'USD'
+                        }).format(orderData.base_price - orderData.discounted_price)}
+                      </h4>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col>
+                      <p>Total after discount</p>
+                    </Col>
+                    <Col className="text-right">
+                      <h4>
+                        {Intl.NumberFormat('en-US', {
+                          style: 'currency',
+                          currency: 'USD'
+                        }).format(orderData.discounted_price)}
+                      </h4>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col>
+                      <p>
+                        VAT (
+                        <span className="text-muted small">
+                          {orderData.tax_percentage}%
+                        </span>
+                        )
+                      </p>
+                    </Col>
+                    <Col className="text-right">
+                      <h4>
+                        {Intl.NumberFormat('en-US', {
+                          style: 'currency',
+                          currency: 'USD'
+                        }).format(orderData.tax_amount)}
+                      </h4>
+                    </Col>
+                  </Row>
+                  <hr className="mt-0" />
+                  <Row>
+                    <Col>
+                      <h3>Total</h3>
+                    </Col>
+                    <Col className="text-right">
+                      <h3>
+                        {Intl.NumberFormat('en-US', {
+                          style: 'currency',
+                          currency: 'USD'
+                        }).format(orderData.total)}
+                      </h3>
+                    </Col>
+                  </Row>
+                  <h5 className="text-muted mt-4">
+                    {'*Note: All payments are paid through cryptocurrency'}
+                  </h5>
                 </div>
               </CardBody>
             </Card>

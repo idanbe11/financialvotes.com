@@ -1,8 +1,6 @@
 import React from 'react';
-// javascipt plugin for creating charts
-import Chart from 'chart.js';
 // reactstrap components
-import { Button, Card, CardHeader, CardBody, Container, Row, Col } from 'reactstrap';
+import { Card, CardBody, Container, Row, Col } from 'reactstrap';
 // layout for this page
 import Auth from 'layouts/Auth';
 
@@ -10,10 +8,10 @@ import AuthHeader from 'components/Headers/AuthHeader';
 import CoinTable from 'components/CoinTable/CoinTable';
 import FeatureCard from 'components/Elements/FeatureCard';
 import RichText from 'components/Elements/RichText';
+import Advertisement from 'components/Advertisement/Advertisement';
 import { getOverviewPageData } from 'lib/api';
 
 const Overview = ({ data }) => {
-  console.log(data);
   const { mainContent, sideContent, featureRows } = data;
 
   return (
@@ -21,6 +19,11 @@ const Overview = ({ data }) => {
       <AuthHeader />
       {/* Page content */}
       <Container className="mt--7" fluid>
+        <Row>
+          <div className="col-lg-6 col-12">
+            <Advertisement source="Auth - Overview" />
+          </div>
+        </Row>
         <Row>
           <Col className="col-12 ml-auto" md="7" lg="8">
             {!!mainContent && !!mainContent.content && (
@@ -64,7 +67,7 @@ const Overview = ({ data }) => {
   );
 };
 
-export async function getStaticProps(context) {
+export async function getServerSideProps(context) {
   try {
     const data = await getOverviewPageData();
     return {
@@ -74,6 +77,17 @@ export async function getStaticProps(context) {
     return { error };
   }
 }
+
+// export async function getStaticProps(context) {
+//   try {
+//     const data = await getOverviewPageData();
+//     return {
+//       props: { data }
+//     };
+//   } catch (error) {
+//     return { error };
+//   }
+// }
 
 Overview.layout = Auth;
 Overview.protected = true;

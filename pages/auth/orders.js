@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import moment from 'moment';
+import { useSession } from 'next-auth/client';
 // reactstrap components
 import {
   Button,
@@ -15,7 +17,7 @@ import {
 import Auth from 'layouts/Auth';
 
 import AuthHeader from 'components/Headers/AuthHeader';
-import moment from 'moment';
+import { getMyOrders } from 'lib/api';
 
 const orders = [
   {
@@ -38,9 +40,11 @@ const orders = [
   }
 ];
 
-const TableItem = ({ type, created, status, active }) => (
+const TableItem = ({ id, type, created, status, active }) => (
   <tr>
-    <th scope="row">{type}</th>
+    <th scope="row">
+      <Link href={`/auth/orders/status?ref=${id}`}>{type}</Link>
+    </th>
     <td>{status}</td>
     <td>{String(active).toUpperCase()}</td>
     <td>{moment(new Date(created)).fromNow()}</td>
@@ -48,7 +52,22 @@ const TableItem = ({ type, created, status, active }) => (
 );
 
 const Orders = (props) => {
-  const myOrders = undefined;
+  const [myOrders, setMyOrders] = useState(undefined);
+  const [fetched, setFetched] = useState(false);
+
+  const [session, loading] = useSession();
+
+  useEffect(() => {
+    const fetchMyOrders = async () => {
+      const data = await getMyOrders(session.jwt);
+      setMyOrders(data);
+      setFetched(true);
+    };
+    if (!fetched && !loading && !!session.jwt) {
+      fetchMyOrders();
+    }
+  }, [session, loading, fetched]);
+
   return (
     <>
       <AuthHeader />
@@ -64,7 +83,7 @@ const Orders = (props) => {
                   </div>
                 </Row>
               </CardHeader>
-              {!!myOrders && Array.isArray(myOrders) && myOrders.length > 0 ? (
+              {fetched && !!myOrders && Array.isArray(myOrders) && myOrders.length > 0 ? (
                 <Table className="align-items-center table-flush" responsive>
                   <thead className="thead-light">
                     <tr>
@@ -75,22 +94,31 @@ const Orders = (props) => {
                     </tr>
                   </thead>
                   <tbody>
-                    {orders.map((order, index) => (
-                      <TableItem
-                        key={index}
-                        //key={order.id}
-                        type={order.type}
-                        created={order.created}
-                        status={order.status}
-                        active={order.active}
-                      />
-                    ))}
+                    {myOrders.map((order, index) => {
+                      return (
+                        <TableItem
+                          key={index}
+                          //key={order.id}
+                          id={order.id}
+                          type={order.type}
+                          created={order.created}
+                          status={order.status}
+                          active={order.status === 'Completed'}
+                        />
+                      );
+                    })}
                   </tbody>
                 </Table>
-              ) : (
+              ) : fetched ? (
                 <CardBody>
                   <div className="text-center my-5">
                     <h3 className="text-light">No orders so far!</h3>
+                  </div>
+                </CardBody>
+              ) : (
+                <CardBody>
+                  <div className="text-center my-5">
+                    <h3 className="text-light">Please wait...</h3>
                   </div>
                 </CardBody>
               )}

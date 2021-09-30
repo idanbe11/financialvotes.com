@@ -35,7 +35,6 @@ const MyCoins = (props) => {
 
   useEffect(() => {
     const fetchMyCoins = async () => {
-      console.log(session.jwt);
       const data = await getMyCoins(session.jwt);
       setMyCoins(data);
       setFetched(true);
@@ -45,7 +44,6 @@ const MyCoins = (props) => {
       setVotes(data);
     };
     if (!fetched && !loading && !!session.jwt) {
-      console.log(session);
       fetchMyCoins();
       fetchVotes();
     }
@@ -92,10 +90,16 @@ const MyCoins = (props) => {
                     ))}
                   </tbody>
                 </Table>
-              ) : (
+              ) : fetched ? (
                 <CardBody>
                   <div className="text-center my-5">
                     <h3 className="text-light">No coins so far!</h3>
+                  </div>
+                </CardBody>
+              ) : (
+                <CardBody>
+                  <div className="text-center my-5">
+                    <h3 className="text-light">Please wait...</h3>
                   </div>
                 </CardBody>
               )}

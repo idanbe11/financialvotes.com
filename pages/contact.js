@@ -6,18 +6,6 @@ import { getContactPageData } from 'lib/api';
 import FeatureCard from 'components/Elements/FeatureCard';
 import RichText from 'components/Elements/RichText';
 
-const ContactForm = ({}) => {
-  return (
-    <div className="accordion my-3 col-lg-6 col-12" id="accordionExample">
-      <Card className="shadow-sm">
-        <CardBody>
-          <Row className="my-2 justify-content-center"></Row>
-        </CardBody>
-      </Card>
-    </div>
-  );
-};
-
 function Contact({ data }) {
   const { featureRows, richText } = data;
   return (
@@ -36,7 +24,7 @@ function Contact({ data }) {
           ))}
       </Row>
       <Row>
-        <Col className="col-12 ml-auto" lg="6">
+        <Col className="col-12">
           {!!richText && !!richText.content && (
             <div className=" accordion my-3" id="accordionExample">
               <Card className="shadow-sm">
@@ -47,7 +35,6 @@ function Contact({ data }) {
             </div>
           )}
         </Col>
-        <ContactForm />
       </Row>
     </Container>
   );

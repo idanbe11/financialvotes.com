@@ -29,7 +29,7 @@ function PagesNavbar() {
     <>
       <Navbar className="navbar-top navbar-horizontal navbar-light bg-green" expand="md">
         <Container className="px-4">
-          <Link href="/admin/dashboard">
+          <Link href="/">
             <span>
               <NavbarBrand href="#">
                 <img
@@ -50,7 +50,7 @@ function PagesNavbar() {
             <div className="navbar-collapse-header d-md-none">
               <Row>
                 <Col className="collapse-brand" xs="6">
-                  <Link href="/admin/dashboard">
+                  <Link href="/">
                     <img
                       alt="financialvotes-logo"
                       src={require('assets/img/brand/fv-logo-large.png')}

@@ -8,28 +8,42 @@ const ModalComponent = ({
   content = 'Are you sure?',
   action,
   actionText = 'Confirm',
-  toggle
+  toggle,
+  loading = false,
+  loaderComponent = null
 }) => {
+  const Loader = loaderComponent;
   return (
     <>
       <Modal toggle={toggle} isOpen={show}>
-        <div className="modal-header">
-          <h5 className="modal-title" id="modal-component">
-            {title}
-          </h5>
-          <button aria-label="Close" className=" close" type="button" onClick={toggle}>
-            <span aria-hidden={true}>×</span>
-          </button>
-        </div>
-        <ModalBody>{content}</ModalBody>
-        <ModalFooter>
-          <Button color="danger" type="button" onClick={toggle}>
-            Cancel
-          </Button>
-          <Button color="info" type="button" onClick={() => action()}>
-            {actionText}
-          </Button>
-        </ModalFooter>
+        {loading && !!loaderComponent ? (
+          loaderComponent
+        ) : (
+          <>
+            <div className="modal-header">
+              <h3 className="modal-title" id="modal-component">
+                {title}
+              </h3>
+              <button
+                aria-label="Close"
+                className=" close"
+                type="button"
+                onClick={toggle}
+              >
+                <span aria-hidden={true}>×</span>
+              </button>
+            </div>
+            <ModalBody>{content}</ModalBody>
+            <ModalFooter>
+              <Button color="danger" type="button" onClick={toggle}>
+                Cancel
+              </Button>
+              <Button color="info" type="button" onClick={() => action()}>
+                {actionText}
+              </Button>
+            </ModalFooter>
+          </>
+        )}
       </Modal>
     </>
   );
