@@ -32,7 +32,7 @@ function Auth(props) {
         {...props}
         routes={routes}
         logo={{
-          innerLink: '/admin/index',
+          innerLink: '/',
           imgSrc: require('assets/img/brand/fv-logo-large.png'),
           imgAlt: '...'
         }}
