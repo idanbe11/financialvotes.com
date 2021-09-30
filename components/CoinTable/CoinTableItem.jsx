@@ -2,7 +2,7 @@ import { Button, Media } from 'reactstrap';
 import moment from 'moment';
 import Link from 'next/link';
 
-const TableItem = ({ coin, votes }) => {
+const TableItem = ({ coin, votes, size = 'large' }) => {
   const { id, in_coingecko, name, logo, data, slug, symbol, launch_date } = coin;
   let noVotes = 0;
   let market_cap = null,
@@ -36,52 +36,61 @@ const TableItem = ({ coin, votes }) => {
       <td>
         <Link href={`/coins/${slug}`}>
           <a href={`/coins/${slug}`} className="text-dark">
-            {`${name} (${
-              in_coingecko
-                ? String(data.symbol).toUpperCase()
-                : String(symbol).toUpperCase()
-            })`}
+            {`${name} ${
+              size === 'large'
+                ? in_coingecko
+                  ? `(${String(data.symbol).toUpperCase()})`
+                  : `(${String(symbol).toUpperCase()})`
+                : ''
+            }`}
           </a>
         </Link>
       </td>
-      <td>
-        {percent_change_1h !== null ? (
-          <>
-            {!!percent_change_1h && percent_change_1h <= 0 && (
+      {size === 'large' && (
+        <>
+          <td>
+            {percent_change_1h !== null ? (
               <>
-                <i className="fas fa-arrow-down text-danger ml-2" />{' '}
-                {Number(percent_change_1h.toFixed(2))}%
+                {!!percent_change_1h && percent_change_1h <= 0 && (
+                  <>
+                    <i className="fas fa-arrow-down text-danger ml-2" />{' '}
+                    {Number(percent_change_1h.toFixed(2))}%
+                  </>
+                )}
+                {!!percent_change_1h && percent_change_1h >= 0 && (
+                  <>
+                    <i className="fas fa-arrow-up text-success ml-2" />{' '}
+                    {Number(percent_change_1h.toFixed(2))}%
+                  </>
+                )}
               </>
+            ) : (
+              '-'
             )}
-            {!!percent_change_1h && percent_change_1h >= 0 && (
-              <>
-                <i className="fas fa-arrow-up text-success ml-2" />{' '}
-                {Number(percent_change_1h.toFixed(2))}%
-              </>
-            )}
-          </>
-        ) : (
-          '-'
-        )}
-      </td>
-      <td>
-        {market_cap !== null
-          ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(
-              market_cap
-            )
-          : '-'}
-      </td>
-      <td>
-        {in_coingecko && !!data.genesis_date
-          ? moment(new Date(data.genesis_date)).fromNow()
-          : moment(new Date(launch_date)).fromNow()}
-      </td>
+          </td>
+          <td>
+            {market_cap !== null
+              ? new Intl.NumberFormat('en-US', {
+                  style: 'currency',
+                  currency: 'USD'
+                }).format(market_cap)
+              : '-'}
+          </td>
+          <td>
+            {in_coingecko && !!data.genesis_date
+              ? moment(new Date(data.genesis_date)).fromNow()
+              : moment(new Date(launch_date)).fromNow()}
+          </td>
+        </>
+      )}
       <td>
         <span className="font-weight-bold mr-2">{noVotes}</span>
         <Link href={`/coins/${slug}?vote=true`}>
           <a
             href={`/coins/${slug}?vote=true`}
-            className="text-dark btn btn-success btn-md"
+            className={`text-dark btn btn-success ${
+              size === 'large' ? 'btn-md' : 'btn-sm'
+            }`}
           >
             Vote
           </a>
