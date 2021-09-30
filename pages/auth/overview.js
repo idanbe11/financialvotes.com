@@ -20,8 +20,12 @@ const Overview = ({ data }) => {
       {/* Page content */}
       <Container className="mt--7" fluid>
         <Row>
-          <div className="col-lg-6 col-12">
-            <Advertisement source="Auth - Overview" />
+          <div className="col-12 col-md-6 col-lg-7">
+            <h1>FinancialVotes.com</h1>
+            <h2 className="title">All Round Best Coins</h2>
+          </div>
+          <div className="col-lg-5 col-12">
+            <Advertisement source={`Coin - ${name}`} />
           </div>
         </Row>
         <Row>
