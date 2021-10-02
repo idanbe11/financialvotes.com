@@ -9,17 +9,40 @@ import AuthHeader from 'components/Headers/AuthHeader';
 import Auth from 'layouts/Auth';
 import { getMyCoins, getAllCoinVotes } from 'lib/api';
 
-const TableItem = ({ coin_id, name, symbol, votes, promoted, created }) => {
+const TableItem = ({
+  coin_id,
+  name,
+  slug,
+  symbol,
+  in_coingecko,
+  data,
+  votes,
+  promoted,
+  created
+}) => {
   let noVotes = 0;
+
   for (let i = 0; i < votes.length; i++) {
     const element = votes[i];
     if (coin_id === element.coin_id) {
       noVotes = element.votes;
     }
   }
+
   return (
     <tr>
-      <th scope="row">{`${name} (${symbol})`}</th>
+      <th scope="row">
+        <Link href={`/coins/${slug}`}>
+          <a href={`/coins/${slug}`} className="text-dark">
+            {`${name} ${
+              in_coingecko
+                ? `(${String(data.symbol).toUpperCase()})`
+                : `(${String(symbol).toUpperCase()})`
+            }`}
+          </a>
+        </Link>
+        {/* {`${name} (${symbol})`} */}
+      </th>
       <td>{String(promoted).toUpperCase()}</td>
       <td>{noVotes}</td>
       <td>{moment(new Date(created)).fromNow()}</td>
@@ -82,8 +105,11 @@ const MyCoins = (props) => {
                         key={coin.id}
                         coin_id={coin.id}
                         name={coin.name}
+                        slug={coin.slug}
                         votes={votes}
                         symbol={coin.symbol}
+                        in_coingecko={coin.in_coingecko}
+                        data={coin.data}
                         promoted={coin.promoted}
                         created={coin.launch_date}
                       />
