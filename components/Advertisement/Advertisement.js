@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Placeholder from './PlaceHolder';
 import { getAdvert, sendAnalyticsEvents } from 'lib/api';
 
-const Advertisement = ({ source = 'Homepage' }) => {
+const Advertisement = ({ source = 'Home' }) => {
   const [state, setState] = useState({
     initial: true,
     fetched: false,
