@@ -13,12 +13,12 @@ import {
 } from 'reactstrap';
 import Pagination from 'components/Elements/Pagination/Pagination';
 import classNames from 'classnames';
-import { getAllCoins, getAllCoinVotes, getCoinsCount } from 'lib/api';
+import { getTodaysBestCoins, getAllTimeBestCoins } from 'lib/api';
 import CoinTableItem from './CoinTableItem';
 
 const pageSize = 10;
 
-const CoinTable = ({ title, getter = getAllCoins }) => {
+const CoinTable = ({ title, getter = getTodaysBestCoins }) => {
   const [activeTab, setActiveTab] = useState('default');
 
   const toggle = (tab) => {
@@ -27,7 +27,7 @@ const CoinTable = ({ title, getter = getAllCoins }) => {
 
   const [loading, setLoading] = useState(true);
   const [coins, setAllCoins] = useState([]);
-  const [votes, setVotes] = useState([]);
+  // const [votes, setVotes] = useState([]);
   const [count, setCount] = useState(0);
   const [pageCount, setPageCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -55,13 +55,38 @@ const CoinTable = ({ title, getter = getAllCoins }) => {
       setPageCount(Math.ceil(data.length / pageSize));
       setLoading(false);
     };
-    const fetchVotes = async () => {
-      const data = await getAllCoinVotes();
-      setVotes(data);
-    };
+    // const fetchVotes = async () => {
+    //   const data = await getAllCoinVotes();
+    //   setVotes(data);
+    // };
     fetchAllCoins();
-    fetchVotes();
+    // fetchVotes();
   }, []);
+
+  useEffect(() => {
+    console.log(activeTab);
+    const fetchAllCoins = async () => {
+      setLoading(true);
+      const data = await getTodaysBestCoins();
+      setAllCoins(data);
+      setCount(data.length);
+      setPageCount(Math.ceil(data.length / pageSize));
+      setLoading(false);
+    };
+    const fetchAllTimeBestCoins = async () => {
+      setLoading(true);
+      const data = await getAllTimeBestCoins();
+      setAllCoins(data);
+      setCount(data.length);
+      setPageCount(Math.ceil(data.length / pageSize));
+      setLoading(false);
+    };
+    if (!title && activeTab === 'alltime') {
+      fetchAllTimeBestCoins();
+    } else if (!title && activeTab === 'default') {
+      fetchAllCoins();
+    }
+  }, [activeTab, title]);
 
   const sortCoinsByProperty = (prop) => {
     coins.sort((a, b) => {
@@ -230,7 +255,11 @@ const CoinTable = ({ title, getter = getAllCoins }) => {
                     {!!coins &&
                       Array.isArray(coins) &&
                       coins.map((item) => (
-                        <CoinTableItem key={item.id} coin={item} votes={votes} />
+                        <CoinTableItem
+                          key={item.id}
+                          coin={item}
+                          // votes={votes}
+                        />
                       ))}
                   </tbody>
                 </Table>
@@ -315,7 +344,7 @@ const CoinTable = ({ title, getter = getAllCoins }) => {
                         <CoinTableItem
                           key={item.id}
                           coin={item}
-                          votes={votes}
+                          // votes={votes}
                           size="small"
                         />
                       ))}

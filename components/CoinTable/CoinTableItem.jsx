@@ -2,21 +2,24 @@ import { Media } from 'reactstrap';
 import moment from 'moment';
 import Link from 'next/link';
 
-const TableItem = ({ coin, votes, size = 'large' }) => {
-  const { id, in_coingecko, name, logo, data, slug, symbol, launch_date } = coin;
-  let noVotes = 0;
+const TableItem = ({ coin, size = 'large' }) => {
+  const { id, in_coingecko, name, logo, data, slug, symbol, launch_date, votes } = coin;
+  // let noVotes = 0;
   let market_cap = null,
     percent_change_1h = null;
-  for (let i = 0; i < votes.length; i++) {
-    const element = votes[i];
-    if (id === element.coin_id) {
-      noVotes = element.votes;
-    }
-  }
+
+  // for (let i = 0; i < votes.length; i++) {
+  //   const element = votes[i];
+  //   if (id === element.coin_id) {
+  //     noVotes = element.votes;
+  //   }
+  // }
+
   if (in_coingecko) {
     market_cap = data.quote.market_cap;
     percent_change_1h = data.quote.price_change_percentage_1h;
   }
+
   return (
     <tr>
       <th scope="row">
@@ -84,7 +87,7 @@ const TableItem = ({ coin, votes, size = 'large' }) => {
         </>
       )}
       <td>
-        <span className="font-weight-bold mr-2">{noVotes}</span>
+        <span className="font-weight-bold mr-2">{votes}</span>
         <Link href={`/coins/${slug}?vote=true`}>
           <a
             href={`/coins/${slug}?vote=true`}
