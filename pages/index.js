@@ -4,7 +4,7 @@ import { Container, Row } from 'reactstrap';
 import Guest from 'layouts/Guest';
 import CoinTable from 'components/CoinTable/CoinTable';
 import Advertisement from 'components/Advertisement/Advertisement';
-import { getAllPromotedCoins, getAllCoins } from 'lib/api';
+import { getAllPromotedCoins, getTodaysBestCoins } from 'lib/api';
 
 const Dashboard = (props) => {
   return (
@@ -23,7 +23,7 @@ const Dashboard = (props) => {
           </div>
         </Row>
         <CoinTable title={'Promoted Coins'} getter={getAllPromotedCoins} />
-        <CoinTable getter={getAllCoins} />
+        <CoinTable getter={getTodaysBestCoins} />
       </Container>
     </>
   );

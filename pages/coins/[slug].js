@@ -19,9 +19,15 @@ import {
 import * as _ from 'lodash';
 import NotificationAlert from 'react-notification-alert';
 import Guest from 'layouts/Guest';
-import { getCoinBySlug, getAllCoinSlugs, voteForCoin } from 'lib/api';
+import {
+  getCoinBySlug,
+  getAllCoinSlugs,
+  getAllPromotedCoins,
+  voteForCoin
+} from 'lib/api';
 import Modal from 'components/Elements/Modal';
 import Advertisement from 'components/Advertisement/Advertisement';
+import CoinTable from 'components/CoinTable/CoinTable';
 
 const CoinSidebar = ({
   links,
@@ -458,7 +464,7 @@ const Coin = ({ coin, error }) => {
           telegram_link={telegram_link}
         />
       </Row>
-      <Row>
+      <Row className="mt-5">
         <div className="col-12 col-md-6 col-lg-6">
           <h1>FinancialVotes.com</h1>
           <h2 className="title">All Round Best Coins</h2>
@@ -468,6 +474,7 @@ const Coin = ({ coin, error }) => {
           <Advertisement source={`Coin - ${name}`} />
         </div>
       </Row>
+      <CoinTable title={'Promoted Coins'} getter={getAllPromotedCoins} />
     </Container>
   );
 };
@@ -475,7 +482,7 @@ const Coin = ({ coin, error }) => {
 export async function getServerSideProps({ params }) {
   try {
     const data = await getCoinBySlug(params.slug);
-    console.log(data);
+    // console.log(data);
     return {
       props: {
         coin: data

@@ -9,7 +9,7 @@ import CoinTable from 'components/CoinTable/CoinTable';
 import FeatureCard from 'components/Elements/FeatureCard';
 import RichText from 'components/Elements/RichText';
 import Advertisement from 'components/Advertisement/Advertisement';
-import { getOverviewPageData } from 'lib/api';
+import { getOverviewPageData, getAllPromotedCoins } from 'lib/api';
 
 const Overview = ({ data }) => {
   const { mainContent, sideContent, featureRows } = data;
@@ -25,7 +25,7 @@ const Overview = ({ data }) => {
             <h2 className="title">All Round Best Coins</h2>
           </div>
           <div className="col-lg-5 col-12">
-            <Advertisement source={`Coin - ${name}`} />
+            <Advertisement source={'Auth - Overview'} />
           </div>
         </Row>
         <Row>
@@ -52,6 +52,7 @@ const Overview = ({ data }) => {
             )}
           </Col>
         </Row>
+        <CoinTable title={'Promoted Coins'} getter={getAllPromotedCoins} />
         <CoinTable />
         <Row>
           {!!featureRows &&
