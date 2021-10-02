@@ -1,10 +1,10 @@
-import React, { Component } from 'react';
-import Router from 'next/router';
+import React from 'react';
+import Error from 'next/error';
 
-export default function _error() {
-  React.useEffect(() => {
-    Router.push('/404');
-  });
+export default function _error({ errorCode }) {
+  if (errorCode) {
+    return <Error statusCode={errorCode} />;
+  }
 
-  return <div />;
+  return <Error statusCode={500} />;
 }
