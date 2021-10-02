@@ -8,7 +8,7 @@ import AuthHeader from 'components/Headers/AuthHeader';
 import CoinTable from 'components/CoinTable/CoinTable';
 import FeatureCard from 'components/Elements/FeatureCard';
 import RichText from 'components/Elements/RichText';
-import Advertisement from 'components/Advertisement/Advertisement';
+// import Advertisement from 'components/Advertisement/Advertisement';
 import { getOverviewPageData, getAllPromotedCoins } from 'lib/api';
 
 const Overview = ({ data }) => {
@@ -16,10 +16,10 @@ const Overview = ({ data }) => {
 
   return (
     <>
-      <AuthHeader />
+      <AuthHeader showAd={true} source="Auth - Overview" />
       {/* Page content */}
       <Container className="mt--7" fluid>
-        <Row>
+        {/* <Row>
           <div className="col-12 col-md-6 col-lg-7">
             <h1>FinancialVotes.com</h1>
             <h2 className="title">All Round Best Coins</h2>
@@ -27,7 +27,7 @@ const Overview = ({ data }) => {
           <div className="col-lg-5 col-12">
             <Advertisement source={'Auth - Overview'} />
           </div>
-        </Row>
+        </Row> */}
         <Row>
           <Col className="col-12 ml-auto" md="7" lg="8">
             {!!mainContent && !!mainContent.content && (

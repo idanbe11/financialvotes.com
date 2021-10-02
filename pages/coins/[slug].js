@@ -19,12 +19,7 @@ import {
 import * as _ from 'lodash';
 import NotificationAlert from 'react-notification-alert';
 import Guest from 'layouts/Guest';
-import {
-  getCoinBySlug,
-  getAllCoinSlugs,
-  getAllPromotedCoins,
-  voteForCoin
-} from 'lib/api';
+import { getCoinBySlug, getAllPromotedCoins, voteForCoin } from 'lib/api';
 import Modal from 'components/Elements/Modal';
 import Advertisement from 'components/Advertisement/Advertisement';
 import CoinTable from 'components/CoinTable/CoinTable';

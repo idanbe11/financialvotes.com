@@ -9,7 +9,6 @@ import { getAllPromotedCoins, getTodaysBestCoins } from 'lib/api';
 const Dashboard = (props) => {
   return (
     <>
-      {/* <Header /> */}
       {/* Page content */}
       <Container>
         <Row>
@@ -19,7 +18,7 @@ const Dashboard = (props) => {
             <h3>Most voted coins all time around the globe</h3>
           </div>
           <div className="col-lg-6 col-12">
-            <Advertisement source="Homepage" />
+            <Advertisement source="Home" />
           </div>
         </Row>
         <CoinTable title={'Promoted Coins'} getter={getAllPromotedCoins} />
