@@ -405,7 +405,7 @@ const createPrimaryChartData = (dataset = []) => {
   const clickLabels = dataset.clicks.map((elem) => elem.label);
   const viewData = dataset.views.map((elem) => elem.value);
   const clickData = dataset.clicks.map((elem) => elem.value);
-  console.log(viewLabels, viewData);
+  // console.log(viewLabels, viewData);
   let chartData = {
     options: {
       scales: {
@@ -471,7 +471,7 @@ const createPrimaryChartData = (dataset = []) => {
 const createSecondaryChartData = (dataset = []) => {
   const labels = dataset.map((elem) => elem.label);
   const data = dataset.map((elem) => elem.value);
-  console.log(labels, data);
+  // console.log(labels, data);
   let chartData = {
     options: {
       scales: {

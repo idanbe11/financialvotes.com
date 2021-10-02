@@ -42,8 +42,6 @@ function Login() {
     }
   }
 
-  console.log(loginError);
-
   return (
     <>
       <Col lg="5" md="7">
@@ -135,9 +133,9 @@ function Login() {
         </Card>
         <Row className="mt-3">
           <Col xs="6">
-            <a className="text-light" href="#" onClick={(e) => e.preventDefault()}>
+            {/* <a className="text-light" href="#" onClick={(e) => e.preventDefault()}>
               <small>Forgot password?</small>
-            </a>
+            </a> */}
           </Col>
           <Col className="text-right" xs="6">
             <a className="text-light" href="#" onClick={(e) => e.preventDefault()}>

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Row } from 'reactstrap';
 import Placeholder from './PlaceHolder';
 import { getAdvert, sendAnalyticsEvents } from 'lib/api';
 

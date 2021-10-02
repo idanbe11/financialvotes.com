@@ -1,4 +1,4 @@
-import { Button, Media } from 'reactstrap';
+import { Media } from 'reactstrap';
 import moment from 'moment';
 import Link from 'next/link';
 

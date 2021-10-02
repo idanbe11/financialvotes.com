@@ -3,16 +3,7 @@ import Link from 'next/link';
 import moment from 'moment';
 import { useSession } from 'next-auth/client';
 // reactstrap components
-import {
-  Button,
-  Card,
-  CardHeader,
-  Table,
-  Container,
-  Row,
-  Col,
-  CardBody
-} from 'reactstrap';
+import { Card, CardHeader, Table, Container, Row, Col, CardBody } from 'reactstrap';
 // layout for this page
 import Auth from 'layouts/Auth';
 

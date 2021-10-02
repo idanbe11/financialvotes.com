@@ -9,9 +9,6 @@ import {
   Nav,
   NavItem,
   NavLink,
-  Button,
-  CardTitle,
-  CardText,
   Spinner
 } from 'reactstrap';
 import Pagination from 'components/Elements/Pagination/Pagination';
