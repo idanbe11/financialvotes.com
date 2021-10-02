@@ -138,7 +138,7 @@ function Login() {
             </a> */}
           </Col>
           <Col className="text-right" xs="6">
-            <a className="text-light" href="#" onClick={(e) => e.preventDefault()}>
+            <a className="text-light" href="/auth/register">
               <small>Create new account</small>
             </a>
           </Col>
