@@ -19,8 +19,7 @@ import {
 import Auth from 'layouts/Auth';
 
 import UserHeader from 'components/Headers/UserHeader';
-import { updateUser } from 'lib/api';
-import { fetchUser } from '../../lib/api';
+import { updateUser, fetchUser } from 'lib/api';
 
 const MyProfile = (props) => {
   const [session, loading] = useSession();
@@ -32,17 +31,20 @@ const MyProfile = (props) => {
   const [userData, setUserData] = useState({
     email: '',
     firstname: '',
-    lastname: ''
+    lastname: '',
+    data: undefined
   });
 
   useEffect(() => {
     async function getUser() {
       const data = await fetchUser(session.jwt);
+      // console.log(data);
       if (!!data && data.confirmed) {
         setUserData({
           email: data.email,
           firstname: !!data.firstname ? data.firstname : '',
-          lastname: !!data.lastname ? data.lastname : ''
+          lastname: !!data.lastname ? data.lastname : '',
+          data
         });
       }
     }
@@ -102,7 +104,7 @@ const MyProfile = (props) => {
         <Row>
           <Col className="order-xl-2 mb-5 mb-xl-0" xl="4">
             <Card className="card-profile shadow">
-              <Row className="justify-content-center">
+              <Row className="justify-content-center text-center mt-3">
                 <Col className="order-lg-2" lg="3">
                   <div className="card-profile-image">
                     <a href="#" onClick={(e) => e.preventDefault()}>
@@ -110,36 +112,41 @@ const MyProfile = (props) => {
                       !!session &&
                       !!session.user &&
                       !!session.user.avatar ? (
-                        <img alt="..." src={session.user.avatar.url} />
+                        <img
+                          className="rounded-cricle"
+                          alt="..."
+                          src={session.user.avatar.url}
+                        />
                       ) : (
                         <i
-                          className="ni ni-circle-08 m-auto"
-                          style={{ fontSize: '1.25rem', top: '0' }}
+                          className="ni ni-circle-08 m-auto rounded-cricle"
+                          style={{ fontSize: '5rem', top: '1rem' }}
                         />
                       )}
                     </a>
                   </div>
                 </Col>
               </Row>
-              <CardHeader className="text-center border-0 pt-8 pt-md-4 pb-0 pb-md-4">
-                <div className="d-flex justify-content-between"></div>
-              </CardHeader>
               <CardBody className="pt-0 pt-md-4">
                 <Row>
                   <div className="col">
-                    <div className="card-profile-stats d-flex justify-content-center mt-md-5">
-                      <div>
-                        <span className="heading">22</span>
-                        <span className="description">Coins</span>
-                      </div>
-                      <div>
+                    <div className="card-profile-stats d-flex justify-content-center mt-md-3">
+                      {!!userData.data && Array.isArray(userData.data.invested_coins) && (
+                        <div>
+                          <span className="heading">
+                            {userData.data.invested_coins.length}
+                          </span>
+                          <span className="description">Submitted Coins</span>
+                        </div>
+                      )}
+                      {/* <div>
                         <span className="heading">10</span>
                         <span className="description">Votes</span>
                       </div>
                       <div>
                         <span className="heading">89</span>
                         <span className="description">Promos</span>
-                      </div>
+                      </div> */}
                     </div>
                   </div>
                 </Row>
