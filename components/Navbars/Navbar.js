@@ -70,6 +70,12 @@ function PagesNavbar() {
                 <NavLink to={'/'} name={'Home'} />
               </NavItem>
               <NavItem>
+                <NavLink to={'/news'} name={'News'} />
+              </NavItem>
+              <NavItem>
+                <NavLink to={'/auth/orders/new?type=advert'} name={'Advertise'} />
+              </NavItem>
+              <NavItem>
                 <NavLink to={'/contact'} name={'Contact'} />
               </NavItem>
               {/* TODO: DARK MODE */}
@@ -116,6 +122,33 @@ function PagesNavbar() {
                     </Button>
                   </NavLinkWrapper>
                 )}
+              </NavItem>
+              <NavItem>
+                <a
+                  href="https://twitter.com/financialvotes"
+                  className="nav-link-icon nav-link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <div className="bg-transparent ">
+                    <i className="fab fa-twitter" style={{ fontSize: '1.25rem' }} />
+                  </div>
+                </a>
+              </NavItem>
+              <NavItem>
+                <a
+                  href="https://t.me/Financialvotes"
+                  className="nav-link-icon nav-link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <div className="bg-transparent ">
+                    <i
+                      className="fab fa-telegram-plane"
+                      style={{ fontSize: '1.25rem' }}
+                    />
+                  </div>
+                </a>
               </NavItem>
             </Nav>
           </UncontrolledCollapse>
