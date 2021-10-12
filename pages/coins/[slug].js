@@ -33,14 +33,16 @@ const CoinSidebar = ({
   twitter_link,
   telegram_link
 }) => {
-  const filteredHomePage = in_coingecko && _.compact(links.homepage);
+  const filteredHomePage = in_coingecko && !!links && _.compact(links.homepage);
   const cg_website_link = filteredHomePage.length !== 0 && filteredHomePage[0];
   const cg_twitter_link =
     in_coingecko &&
+    !!links &&
     !!links.twitter_screen_name &&
     'https://twitter.com/' + links.twitter_screen_name;
   const cg_telegram_link =
     in_coingecko &&
+    !!links &&
     !!links.telegram_channel_identifier &&
     'https://t.me/' + links.telegram_channel_identifier;
 
@@ -274,6 +276,7 @@ const Coin = ({ coin, error }) => {
     description,
     slug,
     launch_date,
+    votes,
     networkChain,
     in_coingecko,
     data,
@@ -409,12 +412,15 @@ const Coin = ({ coin, error }) => {
                     </div>
                   </Col>
                   <Col xs="6" md="6" sm="6" lg="6" className="my-2">
-                    <h2>{name}</h2>
-                    <Badge color="info">
-                      {in_coingecko
-                        ? String(data.symbol).toUpperCase()
-                        : String(symbol).toUpperCase()}
-                    </Badge>
+                    <h2>
+                      {name}
+                      <Badge color="info" className="m-2">
+                        {in_coingecko
+                          ? String(data.symbol).toUpperCase()
+                          : String(symbol).toUpperCase()}
+                      </Badge>
+                    </h2>
+                    {!!votes && <p className="text-muted">{votes} votes</p>}
                   </Col>
                   <Col className="text-center mt-3" xs="12" sm="3" lg="3">
                     <Button

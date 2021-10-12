@@ -139,10 +139,10 @@ const NewCoin = ({ pageData, error }) => {
       // console.log(coin, session.jwt);
       setLoading(true);
       const res = await submitCoin(coin, logo, session.jwt);
-      if (!!res && !!res.id) {
+      if (!!res && !!res.data && res.statusText === 'OK') {
         setLoading(false);
         setTimeout(() => {
-          router.push(`/auth/orders/status?ref=${res.id}`);
+          router.push(`/coins/${res.data.slug}`);
         }, 500);
       } else {
         setLoading(false);
