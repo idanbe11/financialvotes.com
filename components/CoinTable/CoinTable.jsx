@@ -100,7 +100,23 @@ const CoinTable = ({ title, getter = getTodaysBestCoins }) => {
           }
           return 0;
         }
-        return a[prop] - b[prop];
+        let aProp, bProp;
+        switch (prop) {
+          case 'one_hour':
+            aProp = a.in_coingecko ? a.data.quote.price_change_percentage_1h : a[prop];
+            bProp = b.in_coingecko ? b.data.quote.price_change_percentage_1h : b[prop];
+            break;
+          case 'market_cap':
+            aProp = a.in_coingecko ? a.data.quote.market_cap : a[prop];
+            bProp = b.in_coingecko ? b.data.quote.market_cap : b[prop];
+            break;
+          default:
+            aProp = a[prop];
+            bProp = b[prop];
+            break;
+        }
+        // console.log(aProp, bProp);
+        return aProp - bProp;
       } else {
         if (prop === 'name') {
           if (a[prop] > b[prop]) {
@@ -111,7 +127,23 @@ const CoinTable = ({ title, getter = getTodaysBestCoins }) => {
           }
           return 0;
         }
-        return b[prop] - a[prop];
+        let aProp, bProp;
+        switch (prop) {
+          case 'one_hour':
+            aProp = a.in_coingecko ? a.data.quote.price_change_percentage_1h : a[prop];
+            bProp = b.in_coingecko ? b.data.quote.price_change_percentage_1h : b[prop];
+            break;
+          case 'market_cap':
+            aProp = a.in_coingecko ? a.data.quote.market_cap : a[prop];
+            bProp = b.in_coingecko ? b.data.quote.market_cap : b[prop];
+            break;
+          default:
+            aProp = a[prop];
+            bProp = b[prop];
+            break;
+        }
+        // console.log(aProp, bProp);
+        return bProp - aProp;
       }
     });
     setSorting({
@@ -238,17 +270,19 @@ const CoinTable = ({ title, getter = getTodaysBestCoins }) => {
                         Market Cap
                       </th>
                       <th
-                        className={classNames({
-                          sort: true,
-                          active: sorting.selected === 'launch_date'
-                        })}
-                        data-sort="launch_date"
+                        // className={classNames({
+                        //   sort: true,
+                        //   active: sorting.selected === 'launch_date'
+                        // })}
+                        // data-sort="launch_date"
                         scope="col"
-                        onClick={() => sortCoinsByProperty('launch_date')}
+                        // onClick={() => sortCoinsByProperty('launch_date')}
                       >
                         Time since launch
                       </th>
-                      <th scope="col">Votes</th>
+                      <th scope="col" className="text-center">
+                        Votes
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -334,7 +368,9 @@ const CoinTable = ({ title, getter = getTodaysBestCoins }) => {
                       >
                         Name
                       </th>
-                      <th scope="col">Votes</th>
+                      <th scope="col" className="text-center">
+                        Votes
+                      </th>
                     </tr>
                   </thead>
                   <tbody>

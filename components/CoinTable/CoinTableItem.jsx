@@ -1,4 +1,4 @@
-import { Media } from 'reactstrap';
+import { Button, ButtonGroup, Media } from 'reactstrap';
 import moment from 'moment';
 import Link from 'next/link';
 
@@ -15,7 +15,7 @@ const TableItem = ({ coin, size = 'large' }) => {
   //   }
   // }
 
-  if (in_coingecko) {
+  if (in_coingecko && !!data.quote) {
     market_cap = data.quote.market_cap;
     percent_change_1h = data.quote.price_change_percentage_1h;
   }
@@ -86,19 +86,45 @@ const TableItem = ({ coin, size = 'large' }) => {
           </td>
         </>
       )}
-      <td>
-        <span className="font-weight-bold mr-2">{votes}</span>
-        <Link href={`/coins/${slug}?vote=true`}>
-          <a
-            href={`/coins/${slug}?vote=true`}
-            className={`text-dark btn btn-success ${
-              size === 'large' ? 'btn-md' : 'btn-sm'
-            }`}
-          >
-            Vote
-          </a>
-        </Link>
-      </td>
+
+      {size === 'large' ? (
+        <td className="text-right">
+          <span className="font-weight-bold mr-2">{votes}</span>
+          <Link href={`/coins/${slug}?vote=true`}>
+            <a
+              href={`/coins/${slug}?vote=true`}
+              className={`text-dark btn btn-success ${
+                size === 'large' ? 'btn-md' : 'btn-sm'
+              }`}
+            >
+              Vote
+            </a>
+          </Link>
+        </td>
+      ) : (
+        <td className="text-center">
+          <ButtonGroup>
+            <Button
+              className={`text-dark btn btn-secondary ${
+                size === 'large' ? 'btn-md' : 'btn-sm'
+              }`}
+              onClick={(e) => console.log(e)}
+            >
+              <span className="font-weight-bold mr-2">{votes}</span>
+            </Button>
+            <Link href={`/coins/${slug}?vote=true`}>
+              <a
+                href={`/coins/${slug}?vote=true`}
+                className={`text-dark btn btn-success ${
+                  size === 'large' ? 'btn-md' : 'btn-sm'
+                }`}
+              >
+                Vote
+              </a>
+            </Link>
+          </ButtonGroup>
+        </td>
+      )}
     </tr>
   );
 };
