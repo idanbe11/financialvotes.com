@@ -79,7 +79,7 @@ const OrderStatus = ({ pageData, error }) => {
     );
   }
 
-  if (!initial && fetched && orderData === {}) {
+  if (!initial && fetched && !orderData) {
     router.push('/auth/overview');
     return <div />;
   }
@@ -144,6 +144,14 @@ const OrderStatus = ({ pageData, error }) => {
                                 </small>
                               </Col>
                             </Row>
+                            {!!orderData.walletAddress && orderData.walletAddress !== '' && (
+                              <Row className="mt-3">
+                                <Col>
+                                  <h4>From Wallet Address:</h4>
+                                  <p>{orderData.walletAddress}</p>
+                                </Col>
+                              </Row>
+                            )}
                             {!!orderData.userNote && orderData.userNote !== '' && (
                               <Row className="mt-3">
                                 <Col>
@@ -177,7 +185,7 @@ const OrderStatus = ({ pageData, error }) => {
                       <p className="heading">{orderData.orderItemText}</p>
                     </Col>
                     <Col className="text-right">
-                      <h4>x {orderData.quantity}</h4>
+                      <h4>x {orderData.selectedDays}</h4>
                     </Col>
                   </Row>
                   <hr className="my-2" />
@@ -198,7 +206,14 @@ const OrderStatus = ({ pageData, error }) => {
                     <Col>
                       <p>
                         Discount (
-                        <span className="text-muted small">{orderData.discount}%</span>)
+                        <span className="text-muted small">
+                          {((orderData.base_price * orderData.selectedDays -
+                            orderData.discounted_price) /
+                            (orderData.base_price * orderData.selectedDays)) *
+                            100}
+                          %
+                        </span>
+                        )
                       </p>
                     </Col>
                     <Col className="text-right">
@@ -206,7 +221,10 @@ const OrderStatus = ({ pageData, error }) => {
                         {Intl.NumberFormat('en-US', {
                           style: 'currency',
                           currency: 'USD'
-                        }).format(orderData.base_price - orderData.discounted_price)}
+                        }).format(
+                          orderData.base_price * orderData.selectedDays -
+                            orderData.discounted_price
+                        )}
                       </h4>
                     </Col>
                   </Row>

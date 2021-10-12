@@ -53,6 +53,8 @@ const NewOrder = ({ pageData, error }) => {
   const [selectedCoin, setSelectedCoin] = useState('');
   const [price, setPrice] = useState(0);
   const [discountedPrice, setDiscountedPrice] = useState(0);
+  const [walletAddress, setWalletAddress] = useState('');
+  const [userNote, setUserNote] = useState('');
   const [selectedDays, setSelectedDays] = useState(0);
   const [myCoins, setMyCoins] = useState([]);
   const [fetched, setFetched] = useState(false);
@@ -73,11 +75,11 @@ const NewOrder = ({ pageData, error }) => {
       ),
       type: type,
       icon: 'ni ni-bell-55',
-      autoDismiss: 7
+      autoDismiss: 10
     };
     notificationAlertRef.current.notificationAlert(options);
   };
-  console.log(router.query, orderType);
+  // console.log(router.query, orderType);
 
   useEffect(() => {
     const fetchMyCoins = async () => {
@@ -86,7 +88,7 @@ const NewOrder = ({ pageData, error }) => {
       setFetched(true);
     };
     if (!fetched && !loading && !!session.jwt) {
-      console.log(session);
+      // console.log(session);
       fetchMyCoins();
     }
   }, [session, loading, fetched]);
@@ -119,20 +121,23 @@ const NewOrder = ({ pageData, error }) => {
   const getNormalizedPackageOptions = (packageItem, attribute) => {
     let items = [];
     if (!!packageItem && !!packageItem[attribute]) {
-      items = packageItem[attribute].map((option) => ({
-        value: option.discount_percentage,
-        label: `${option.no_of_days} Days ${
-          !!option.discount_hint ? ` (${option.discount_hint})` : ''
-        }`,
-        days: option.no_of_days
-      }));
+      items = packageItem[attribute].map((option) => {
+        return {
+          value: option.id,
+          label: `${option.no_of_days} Days ${
+            !!option.discount_hint ? ` (${option.discount_hint})` : ''
+          }`,
+          discount_percentage: option.discount_percentage,
+          days: option.no_of_days
+        };
+      });
     }
     return items;
   };
 
   const getNormalizedCoins = () => {
     let items = [];
-    if (myCoins.length > 0) {
+    if (!!myCoins && myCoins.length > 0) {
       items = myCoins.map((option) => ({
         value: option.id,
         label: `${option.name} (${option.symbol})`
@@ -142,7 +147,14 @@ const NewOrder = ({ pageData, error }) => {
   };
 
   const onSubmitHandler = async () => {
-    if (orderType === 'advert' && accept && advertLink !== '' && !!banner) {
+    if (
+      orderType === 'advert' &&
+      accept &&
+      advertLink !== '' &&
+      !!banner &&
+      walletAddress !== ''
+    ) {
+      setLoading(true);
       if (!banner.type.startsWith('image')) {
         setBannerError('Only images or gifs are allowed!');
       } else {
@@ -153,31 +165,33 @@ const NewOrder = ({ pageData, error }) => {
           no_of_days: selectedDays,
           start: new Date()
         };
-        console.log(advert);
+        // console.log(advert);
         const createdAdvertisement = await submitAdvertisement(
           advert,
           banner,
           session.jwt
         );
-        console.log(createdAdvertisement);
+        // console.log(createdAdvertisement);
         const orderPayload = {
           type: 'Advert',
           orderItemText,
           entityId: createdAdvertisement.id,
           packageId: advertisementPackage.id,
           base_price: advertisementPackage.basePrice,
-          discount: advertisementPackage.basePrice - discountedPrice,
+          discount: advertisementPackage.basePrice * selectedDays - discountedPrice,
           discounted_price: discountedPrice,
           tax_amount: price - discountedPrice,
           tax_percentage: advertisementPackage.taxPercentage,
           total: price,
-          userNote: '',
-          selectedDays
+          userNote,
+          selectedDays,
+          walletAddress
         };
-        console.log(orderPayload);
+        // console.log(orderPayload);
         // create order
         const res = await createOrder(orderPayload, session.jwt);
-        if (!!res && !!res.id) {
+        // console.log(res);
+        if (!!res && !!res.data && res.statusText === 'OK') {
           setLoading(false);
           notify('success', 'Success!', 'Your request is submitted!');
           setTimeout(() => {
@@ -188,7 +202,12 @@ const NewOrder = ({ pageData, error }) => {
           notify('danger', 'Error!', 'Invalid request! Please double check the details.');
         }
       }
-    } else if (orderType === 'coin-promo' && accept) {
+    } else if (
+      orderType === 'coin-promo' &&
+      accept &&
+      selectedCoin !== '' &&
+      walletAddress !== ''
+    ) {
       // create order
       const orderPayload = {
         type: 'Coin_Promotion',
@@ -196,17 +215,19 @@ const NewOrder = ({ pageData, error }) => {
         entityId: selectedCoin,
         packageId: coinPromoPackage.id,
         base_price: coinPromoPackage.basePrice,
-        discount: coinPromoPackage.basePrice - discountedPrice,
+        discount: coinPromoPackage.basePrice * selectedDays - discountedPrice,
         discounted_price: discountedPrice,
         tax_amount: price - discountedPrice,
         tax_percentage: coinPromoPackage.taxPercentage,
         total: price,
-        userNote: '',
-        selectedDays
+        userNote,
+        selectedDays,
+        walletAddress
       };
-      console.log(orderPayload);
+      // console.log(orderPayload);
       const res = await createOrder(orderPayload, session.jwt);
-      if (!!res && !!res.id) {
+      // console.log(res);
+      if (!!res && !!res.data && res.statusText === 'OK') {
         setLoading(false);
         notify('success', 'Success!', 'Your request is submitted!');
         setTimeout(() => {
@@ -219,33 +240,25 @@ const NewOrder = ({ pageData, error }) => {
     }
   };
 
-  const handlePriceChange = (discount) => {
+  const handlePriceChange = (discount, days) => {
+    setSelectedDays(days);
     if (orderType === 'advert') {
-      const discounted_price = advertisementPackage.basePrice * (100 - discount) * 0.01;
+      const discounted_price =
+        advertisementPackage.basePrice * days * (100 - discount) * 0.01;
       const totalPrice =
         (100 + advertisementPackage.taxPercentage) * 0.01 * discounted_price;
       setDiscountedPrice(discounted_price);
       setPrice(totalPrice);
     } else if (orderType === 'coin-promo') {
-      const discounted_price = coinPromoPackage.basePrice * (100 - discount) * 0.01;
+      const discounted_price =
+        coinPromoPackage.basePrice * days * (100 - discount) * 0.01;
       const totalPrice = (100 + coinPromoPackage.taxPercentage) * 0.01 * discounted_price;
       setDiscountedPrice(discounted_price);
       setPrice(totalPrice);
     }
   };
 
-  const handleSelectedDayChange = (days) => {
-    setSelectedDays(days);
-  };
-
-  console.log(
-    accept,
-    price,
-    discountedPrice,
-    selectedDays,
-    (orderType === 'advert' && advertisementPackage.basePrice !== discountedPrice) ||
-      (orderType === 'coin-promo' && coinPromoPackage.basePrice !== discountedPrice)
-  );
+  // console.log(accept, price, discountedPrice, selectedDays, walletAddress, userNote);
 
   return (
     <>
@@ -399,7 +412,7 @@ const NewOrder = ({ pageData, error }) => {
                         <div className="pl-lg-4">
                           <Row>
                             <Col md="12">
-                              <h2>Price: ${advertisementPackage.basePrice}</h2>
+                              <h2>Price Per Day: ${advertisementPackage.basePrice}</h2>
                               <FormGroup>
                                 <label
                                   className="form-control-label"
@@ -413,8 +426,10 @@ const NewOrder = ({ pageData, error }) => {
                                     'priceOptions'
                                   )}
                                   onChange={(option) => {
-                                    handleSelectedDayChange(option.days);
-                                    handlePriceChange(option.value);
+                                    handlePriceChange(
+                                      option.discount_percentage,
+                                      option.days
+                                    );
                                   }}
                                   isDisabled={orderLoading}
                                 />
@@ -473,7 +488,7 @@ const NewOrder = ({ pageData, error }) => {
                           <Row>
                             <Col md="12">
                               <FormGroup>
-                                <h2>Price: ${coinPromoPackage.basePrice}</h2>
+                                <h2>Price Per Day: ${coinPromoPackage.basePrice}</h2>
                                 <label
                                   className="form-control-label"
                                   htmlFor="input-address"
@@ -486,8 +501,10 @@ const NewOrder = ({ pageData, error }) => {
                                     'priceOptions'
                                   )}
                                   onChange={(option) => {
-                                    handleSelectedDayChange(option.days);
-                                    handlePriceChange(option.value);
+                                    handlePriceChange(
+                                      option.discount_percentage,
+                                      option.days
+                                    );
                                   }}
                                   isDisabled={orderLoading}
                                 />
@@ -524,21 +541,27 @@ const NewOrder = ({ pageData, error }) => {
                                     `${Intl.NumberFormat('en-US', {
                                       style: 'currency',
                                       currency: 'USD'
-                                    }).format(advertisementPackage.basePrice)}`}
+                                    }).format(
+                                      advertisementPackage.basePrice * selectedDays
+                                    )}`}
                                   {orderType === 'coin-promo' &&
                                     !!coinPromoPackage &&
                                     coinPromoPackage.basePrice !== 0 &&
                                     `${Intl.NumberFormat('en-US', {
                                       style: 'currency',
                                       currency: 'USD'
-                                    }).format(coinPromoPackage.basePrice)}`}
+                                    }).format(
+                                      coinPromoPackage.basePrice * selectedDays
+                                    )}`}
                                 </p>
                               </Col>
                             </Row>
                             {(orderType === 'advert' &&
-                              advertisementPackage.basePrice !== discountedPrice) ||
+                              advertisementPackage.basePrice * selectedDays !==
+                                discountedPrice) ||
                             (orderType === 'coin-promo' &&
-                              coinPromoPackage.basePrice !== discountedPrice) ? (
+                              coinPromoPackage.basePrice * selectedDays !==
+                                discountedPrice) ? (
                               <Row>
                                 <Col xs="6" sm="4">
                                   <h4 className="mr-3">Price after discount:</h4>
@@ -584,6 +607,51 @@ const NewOrder = ({ pageData, error }) => {
                         </div>
                       </>
                     )}
+                    <hr className="my-4" />
+                    {/* User Details */}
+                    <h6 className="heading-small text-muted mb-4">Your Details</h6>
+                    <div className="pl-lg-4">
+                      <Row>
+                        <Col md="12">
+                          <FormGroup>
+                            <label
+                              className="form-control-label"
+                              htmlFor="wallet-address-input"
+                            >
+                              Your Wallet Address *
+                            </label>
+                            <Input
+                              className="form-control-alternative"
+                              // disabled={formLoading}
+                              formNoValidate={walletAddress !== ''}
+                              id="wallet-address-input"
+                              type="text"
+                              onChange={(e) => {
+                                e.preventDefault();
+                                setWalletAddress(e.target.value);
+                              }}
+                              disabled={orderLoading}
+                            />
+                          </FormGroup>
+                          <FormGroup>
+                            <label htmlFor="user-input">Note (Optional)</label>
+                            <Input
+                              className="form-control-alternative"
+                              // disabled={formLoading}
+                              formNoValidate={userNote !== ''}
+                              id="user-input"
+                              rows="3"
+                              type="textarea"
+                              onChange={(e) => {
+                                e.preventDefault();
+                                setUserNote(e.target.value);
+                              }}
+                              disabled={orderLoading}
+                            />
+                          </FormGroup>
+                        </Col>
+                      </Row>
+                    </div>
                     {orderType !== '' && (
                       <>
                         <hr className="my-4" />
@@ -644,7 +712,7 @@ const NewOrder = ({ pageData, error }) => {
   );
 };
 
-export async function getStaticProps(context) {
+export async function getServerSideProps(context) {
   try {
     const pageData = await getOrderPageData();
     return {
