@@ -103,18 +103,18 @@ function Login() {
                   {loginError}
                 </FormFeedback>
               }
-              <div className="custom-control custom-control-alternative custom-checkbox">
-                {/* <input
+              {/* <div className="custom-control custom-control-alternative custom-checkbox">
+                <input
                     className="custom-control-input"
                     id=" rememberMe"
                     type="checkbox"
                     value={state.rememberMe}
                     onChange={handleChange}
-                  /> */}
+                  />
                 <label className="custom-control-label" htmlFor=" rememberMe">
                   <span className="text-muted">Remember me</span>
                 </label>
-              </div>
+              </div> */}
               <div className="text-center">
                 <Button
                   className="my-4"

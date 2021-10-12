@@ -6,8 +6,6 @@ import { Container, Row, Col } from 'reactstrap';
 import Navbar from 'components/Navbars/Navbar';
 import AuthFooter from 'components/Footers/AuthFooter';
 
-import routes from 'routes';
-
 function Guest(props) {
   React.useEffect(() => {
     document.body.classList.add('bg-default');
