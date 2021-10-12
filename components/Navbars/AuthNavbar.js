@@ -15,9 +15,11 @@ import {
   DropdownToggle,
   Media,
   DropdownMenu,
-  DropdownItem
+  DropdownItem,
+  Button
 } from 'reactstrap';
 import NavLink from '../NavLink/NavLink';
+import NavLinkWrapper from '../NavLink/NavLinkWrapper';
 
 function AuthNavbar() {
   const [session, loading] = useSession();
@@ -56,7 +58,22 @@ function AuthNavbar() {
                 <NavLink to={'/'} name={'Home'} />
               </NavItem>
               <NavItem>
+                <NavLink to={'/news'} name={'News'} />
+              </NavItem>
+              <NavItem>
                 <NavLink to={'/contact'} name={'Contact'} />
+              </NavItem>
+              <NavItem className="my-auto">
+                <NavLinkWrapper to={'/auth/coins/new'} name="Submit Coin">
+                  <Button
+                    color="warning"
+                    type="button"
+                    size="md"
+                    className="text-nowrap m-md-0 mr-2 m-2"
+                  >
+                    Submit Coin
+                  </Button>
+                </NavLinkWrapper>
               </NavItem>
               {/* TODO: DARK MODE */}
               {/* <NavItem>

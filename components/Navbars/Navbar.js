@@ -72,9 +72,9 @@ function PagesNavbar() {
               <NavItem>
                 <NavLink to={'/news'} name={'News'} />
               </NavItem>
-              <NavItem>
+              {/* <NavItem>
                 <NavLink to={'/auth/orders/new?type=advert'} name={'Advertise'} />
-              </NavItem>
+              </NavItem> */}
               <NavItem>
                 <NavLink to={'/contact'} name={'Contact'} />
               </NavItem>
@@ -97,6 +97,18 @@ function PagesNavbar() {
                 </a>
               </NavItem> */}
               <NavItem className="my-auto">
+                <NavLinkWrapper to={'/auth/coins/new'} name="Submit Coin">
+                  <Button
+                    color="warning"
+                    type="button"
+                    size="md"
+                    className="text-nowrap m-md-0 mr-2 m-2"
+                  >
+                    Submit Coin
+                  </Button>
+                </NavLinkWrapper>
+              </NavItem>
+              <NavItem className="my-auto">
                 {!loading && !!session && !!session.user ? (
                   <NavLinkWrapper to={'/auth/overview'}>
                     <Media className="align-items-center ">
@@ -117,13 +129,18 @@ function PagesNavbar() {
                   </NavLinkWrapper>
                 ) : (
                   <NavLinkWrapper to={'/auth/login'} name="Sign In">
-                    <Button color="primary" type="button" size="md" className="">
+                    <Button
+                      color="primary"
+                      type="button"
+                      size="md"
+                      className="m-md-0 mr-2 m-2"
+                    >
                       Login
                     </Button>
                   </NavLinkWrapper>
                 )}
               </NavItem>
-              <NavItem>
+              <NavItem className="d-none d-lg-block">
                 <a
                   href="https://twitter.com/financialvotes"
                   className="nav-link-icon nav-link"
@@ -135,7 +152,7 @@ function PagesNavbar() {
                   </div>
                 </a>
               </NavItem>
-              <NavItem>
+              <NavItem className="d-none d-lg-block">
                 <a
                   href="https://t.me/Financialvotes"
                   className="nav-link-icon nav-link"

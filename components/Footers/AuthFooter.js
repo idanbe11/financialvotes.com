@@ -10,42 +10,57 @@ function Login() {
     <>
       <footer className="py-5">
         <Container>
-          <Row className="align-items-center justify-content-xl-between">
-            <Col xl="6">
-              <div className="copyright text-center text-xl-left text-muted">
-                <img
-                  alt="financialvotes-logo"
-                  className="mr-3"
-                  src={require('assets/img/brand/favicon.png')}
-                />
-                © {new Date().getFullYear()}{' '}
-                <a className="font-weight-bold text-success ml-1" href="#">
-                  FinancialVotes
-                </a>
+          <Row className="align-items-center">
+            <Col xl="6" className="order-xl-2">
+              <div className="copyright text-center text-info">
+                <Nav className="nav-footer justify-content-center">
+                  <NavItem>
+                    <a
+                      href="https://twitter.com/financialvotes"
+                      className="nav-link-icon nav-link"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <div className="bg-transparent ">
+                        <i className="fab fa-twitter" style={{ fontSize: '1.25rem' }} />
+                      </div>
+                    </a>
+                  </NavItem>
+                  <NavItem>
+                    <a
+                      href="https://t.me/Financialvotes"
+                      className="nav-link-icon nav-link"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <div className="bg-transparent ">
+                        <i
+                          className="fab fa-telegram-plane"
+                          style={{ fontSize: '1.25rem' }}
+                        />
+                      </div>
+                    </a>
+                  </NavItem>
+                </Nav>
               </div>
             </Col>
-            <Col xl="6">
-              <Nav className="nav-footer justify-content-center justify-content-xl-end">
-                {/* <NavItem>
-                  <Link href="/about">
-                    <a className="nav-link">About Us</a>
-                  </Link>
-                </NavItem> */}
+            <Col xl="6" className="order-xl-1">
+              <Nav className="nav-footer justify-content-center">
                 <NavItem>
                   <Link href="/contact">
                     <a className="nav-link">Contact Us</a>
                   </Link>
                 </NavItem>
-                {/* <NavItem>
-                  <Link href="/blog">
-                    <a className="nav-link">Blog</a>
+                <NavItem>
+                  <Link href="/auth/orders/new?type=advert">
+                    <a className="nav-link">Advertise</a>
                   </Link>
                 </NavItem>
                 <NavItem>
                   <Link href="/news">
                     <a className="nav-link">News</a>
                   </Link>
-                </NavItem> */}
+                </NavItem>
                 <NavItem>
                   <Link href="/terms-and-conditions">
                     <a className="nav-link">T{`&`}C</a>
@@ -58,8 +73,21 @@ function Login() {
                 </NavItem>
               </Nav>
             </Col>
+            <Col xl="12" className="order-xl-3">
+              <div className="copyright text-center text-muted mt-4">
+                <img
+                  alt="financialvotes-logo"
+                  className="mr-3"
+                  src={require('assets/img/brand/favicon.png')}
+                />
+                © {new Date().getFullYear()}{' '}
+                <a className="font-weight-bold text-success ml-1" href="#">
+                  FinancialVotes
+                </a>
+              </div>
+            </Col>
             {/* <Col xl="12">
-              <div className="copyright text-center text-xl-right text-info">
+              <div className="copyright text-center text-info my-3">
                 <small>
                   Designed with ❤ by
                   <a
