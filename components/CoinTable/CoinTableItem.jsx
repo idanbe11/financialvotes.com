@@ -108,7 +108,7 @@ const TableItem = ({ coin, size = 'large' }) => {
               className={`text-dark btn btn-secondary ${
                 size === 'large' ? 'btn-md' : 'btn-sm'
               }`}
-              onClick={(e) => console.log(e)}
+              onClick={(e) => e.preventDefault()}
             >
               <span className="font-weight-bold mr-2">{votes}</span>
             </Button>
