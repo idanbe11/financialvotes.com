@@ -22,11 +22,15 @@ const CoinTable = ({ title, getter = getTodaysBestCoins }) => {
   const [activeTab, setActiveTab] = useState('default');
 
   const toggle = (tab) => {
-    if (activeTab !== tab) setActiveTab(tab);
+    if (activeTab !== tab) {
+      setActiveTab(tab);
+      setCurrentPage(1);
+    }
   };
 
   const [loading, setLoading] = useState(true);
   const [coins, setAllCoins] = useState([]);
+  const [coinsPage, setCoinsPage] = useState([]);
   // const [votes, setVotes] = useState([]);
   const [count, setCount] = useState(0);
   const [pageCount, setPageCount] = useState(0);
@@ -51,6 +55,7 @@ const CoinTable = ({ title, getter = getTodaysBestCoins }) => {
     const fetchAllCoins = async () => {
       const data = await getter();
       setAllCoins(data);
+      setCoinsPage(data.slice((currentPage - 1) * pageSize, currentPage * pageSize));
       setCount(data.length);
       setPageCount(Math.ceil(data.length / pageSize));
       setLoading(false);
@@ -69,6 +74,7 @@ const CoinTable = ({ title, getter = getTodaysBestCoins }) => {
       setLoading(true);
       const data = await getTodaysBestCoins();
       setAllCoins(data);
+      setCoinsPage(data.slice((currentPage - 1) * pageSize, currentPage * pageSize));
       setCount(data.length);
       setPageCount(Math.ceil(data.length / pageSize));
       setLoading(false);
@@ -77,6 +83,7 @@ const CoinTable = ({ title, getter = getTodaysBestCoins }) => {
       setLoading(true);
       const data = await getAllTimeBestCoins();
       setAllCoins(data);
+      setCoinsPage(data.slice((currentPage - 1) * pageSize, currentPage * pageSize));
       setCount(data.length);
       setPageCount(Math.ceil(data.length / pageSize));
       setLoading(false);
@@ -154,6 +161,10 @@ const CoinTable = ({ title, getter = getTodaysBestCoins }) => {
       }
     });
   };
+
+  useEffect(() => {
+    setCoinsPage(coins.slice((currentPage - 1) * pageSize, currentPage * pageSize));
+  }, [currentPage]);
 
   const CoinTableFooter = () => {
     const handleChange = (value) => {
@@ -286,9 +297,9 @@ const CoinTable = ({ title, getter = getTodaysBestCoins }) => {
                     </tr>
                   </thead>
                   <tbody>
-                    {!!coins &&
-                      Array.isArray(coins) &&
-                      coins.map((item) => (
+                    {!!coinsPage &&
+                      Array.isArray(coinsPage) &&
+                      coinsPage.map((item) => (
                         <CoinTableItem
                           key={item.id}
                           coin={item}
@@ -374,9 +385,9 @@ const CoinTable = ({ title, getter = getTodaysBestCoins }) => {
                     </tr>
                   </thead>
                   <tbody>
-                    {!!coins &&
-                      Array.isArray(coins) &&
-                      coins.map((item) => (
+                    {!!coinsPage &&
+                      Array.isArray(coinsPage) &&
+                      coinsPage.map((item) => (
                         <CoinTableItem
                           key={item.id}
                           coin={item}
