@@ -356,6 +356,9 @@ const Coin = ({ coin, error }) => {
             } else {
               setVoteReqLoading(false);
               notify('success', 'Your vote has been submitted!');
+              setTimeout(() => {
+                router.reload(window.location.pathname);
+              }, 1000);
             }
             setVoteModalConfirm(!voteConfirm);
           } else {
