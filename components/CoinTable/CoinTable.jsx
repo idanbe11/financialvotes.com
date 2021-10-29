@@ -267,7 +267,7 @@ const CoinTable = ({ title, getter = getTodaysBestCoins }) => {
                         scope="col"
                         onClick={() => sortCoinsByProperty('one_hour')}
                       >
-                        24h
+                        1h
                       </th>
                       <th
                         className={classNames({
