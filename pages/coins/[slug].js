@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import moment from 'moment';
 import { useRouter } from 'next/dist/client/router';
+// react component that copies the given text inside your clipboard
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 import ErrorPage from 'next/error';
 import { useSession } from 'next-auth/client';
 import ReactMarkdown from 'react-markdown';
@@ -14,7 +16,9 @@ import {
   Container,
   Row,
   Col,
-  Spinner
+  Spinner,
+  CardFooter,
+  UncontrolledTooltip
 } from 'reactstrap';
 import * as _ from 'lodash';
 import NotificationAlert from 'react-notification-alert';
@@ -25,6 +29,8 @@ import Advertisement from 'components/Advertisement/Advertisement';
 import CoinTable from 'components/CoinTable/CoinTable';
 
 const CoinSidebar = ({
+  price,
+  market_cap,
   links,
   in_coingecko,
   created,
@@ -45,7 +51,9 @@ const CoinSidebar = ({
     !!links &&
     !!links.telegram_channel_identifier &&
     'https://t.me/' + links.telegram_channel_identifier;
-
+  const displayPrice = in_coingecko && !!quote.price ? quote.price : price;
+  const displayMarketCap =
+    in_coingecko && !!quote.market_cap ? quote.market_cap : market_cap;
   // console.log(
   //   'CoinSidebar',
   //   quote,
@@ -68,18 +76,20 @@ const CoinSidebar = ({
           >
             <Card className="shadow-sm">
               <CardBody>
-                {!!quote.price && (
+                {!!displayPrice && (
                   <Row className="mb-4">
                     <div className="col">
                       <CardTitle tag="h5" className="text-uppercase text-muted mb-0">
                         Price
                       </CardTitle>
                       <span className="h2 font-weight-bold mb-0">
-                        {!!quote.price &&
+                        {!!displayPrice &&
                           new Intl.NumberFormat('en-US', {
                             style: 'currency',
-                            currency: 'USD'
-                          }).format(quote.price)}
+                            currency: 'USD',
+                            maximumFractionDigits: 4,
+                            maximumSignificantDigits: 10
+                          }).format(displayPrice)}
                       </span>
                     </div>
                     <Col className="col-auto">
@@ -89,18 +99,20 @@ const CoinSidebar = ({
                     </Col>
                   </Row>
                 )}
-                {(!!quote.market_cap || quote.market_cap === 0) && (
+                {!!displayMarketCap && (
                   <Row className="mb-4">
                     <div className="col">
                       <CardTitle tag="h5" className="text-uppercase text-muted mb-0">
                         Market Cap
                       </CardTitle>
                       <span className="h2 font-weight-bold mb-0">
-                        {(!!quote.market_cap || quote.market_cap === 0) &&
+                        {displayMarketCap &&
                           new Intl.NumberFormat('en-US', {
                             style: 'currency',
-                            currency: 'USD'
-                          }).format(quote.market_cap)}
+                            currency: 'USD',
+                            maximumFractionDigits: 4,
+                            maximumSignificantDigits: 10
+                          }).format(displayMarketCap)}
                       </span>
                     </div>
                     {/* <Col className="col-auto">
@@ -268,7 +280,8 @@ const CoinSidebar = ({
 };
 
 const Coin = ({ coin, error }) => {
-  // console.log(coin);
+  console.log(coin);
+
   const {
     logo,
     name,
@@ -287,6 +300,7 @@ const Coin = ({ coin, error }) => {
   const router = useRouter();
   const [session, loading] = useSession();
   const notificationAlertRef = useRef();
+  const [copiedText, setCopiedText] = useState();
   const [voteConfirm, setVoteModalConfirm] = useState(false);
   const [initial, setInitial] = useState(true);
   const [voteReqLoading, setVoteReqLoading] = useState(false);
@@ -455,10 +469,47 @@ const Coin = ({ coin, error }) => {
                   )}
                 </Container>
               </CardBody>
+              <CardFooter className="px-0">
+                <Container>
+                  <div className="col">
+                    {!!coin.contract_address && (
+                      <div>
+                        Contract Address:{' '}
+                        <CopyToClipboard
+                          text={coin.contract_address}
+                          onCopy={() => setCopiedText(coin.contract_address)}
+                        >
+                          <button
+                            className="btn-icon-clipboard p-0"
+                            id={`contract-address-${slug}`}
+                            type="button"
+                            style={{ width: 'auto' }}
+                          >
+                            <span className="text-teal mx-2">
+                              {coin.contract_address}
+                            </span>
+                          </button>
+                        </CopyToClipboard>
+                        <UncontrolledTooltip
+                          delay={0}
+                          trigger="hover focus"
+                          target={`contract-address-${slug}`}
+                        >
+                          {copiedText === coin.contract_address
+                            ? 'Copied!'
+                            : 'Click to copy'}
+                        </UncontrolledTooltip>
+                      </div>
+                    )}
+                  </div>
+                </Container>
+              </CardFooter>
             </Card>
           </div>
         </Col>
         <CoinSidebar
+          price={coin.price}
+          market_cap={coin.market_cap}
           in_coingecko={in_coingecko}
           quote={data.quote}
           links={data.links}
