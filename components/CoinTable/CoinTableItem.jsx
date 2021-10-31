@@ -3,17 +3,18 @@ import moment from 'moment';
 import Link from 'next/link';
 
 const TableItem = ({ coin, size = 'large' }) => {
-  const { id, in_coingecko, name, logo, data, slug, symbol, launch_date, votes } = coin;
-  // let noVotes = 0;
-  let market_cap = null,
-    percent_change_1h = null;
-
-  // for (let i = 0; i < votes.length; i++) {
-  //   const element = votes[i];
-  //   if (id === element.coin_id) {
-  //     noVotes = element.votes;
-  //   }
-  // }
+  const {
+    in_coingecko,
+    name,
+    logo,
+    data,
+    slug,
+    symbol,
+    launch_date,
+    votes,
+    one_hour,
+    market_cap
+  } = coin;
 
   let responsiveStyles = {},
     logoResponsiveStyles = {};
@@ -28,11 +29,6 @@ const TableItem = ({ coin, size = 'large' }) => {
     logoResponsiveStyles = {
       paddingLeft: '22px !important'
     };
-  }
-
-  if (in_coingecko && !!data.quote) {
-    market_cap = data.quote.market_cap;
-    percent_change_1h = data.quote.price_change_percentage_1h;
   }
 
   return (
@@ -83,18 +79,18 @@ const TableItem = ({ coin, size = 'large' }) => {
       {size === 'large' && (
         <>
           <td>
-            {percent_change_1h !== null ? (
+            {!!one_hour ? (
               <>
-                {!!percent_change_1h && percent_change_1h <= 0 && (
+                {!!one_hour && one_hour < 0 && (
                   <>
                     <i className="fas fa-arrow-down text-danger ml-2" />{' '}
-                    {Number(percent_change_1h.toFixed(2))}%
+                    {Number(one_hour.toFixed(2))}%
                   </>
                 )}
-                {!!percent_change_1h && percent_change_1h >= 0 && (
+                {!!one_hour && one_hour > 0 && (
                   <>
                     <i className="fas fa-arrow-up text-success ml-2" />{' '}
-                    {Number(percent_change_1h.toFixed(2))}%
+                    {Number(one_hour.toFixed(2))}%
                   </>
                 )}
               </>

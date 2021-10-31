@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import * as _ from 'lodash';
 import {
   Card,
   CardHeader,
@@ -31,7 +32,6 @@ const CoinTable = ({ title, getter = getTodaysBestCoins }) => {
   const [loading, setLoading] = useState(true);
   const [coins, setAllCoins] = useState([]);
   const [coinsPage, setCoinsPage] = useState([]);
-  // const [votes, setVotes] = useState([]);
   const [count, setCount] = useState(0);
   const [pageCount, setPageCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -51,30 +51,46 @@ const CoinTable = ({ title, getter = getTodaysBestCoins }) => {
     }
   });
 
+  const arrangeCoins = (array) => {
+    let finalCoin = {},
+      finalCoins = [];
+    array.map((item) => {
+      finalCoin = _.cloneDeep(item);
+      if (finalCoin.in_coingecko && !!finalCoin.data && !!finalCoin.data.quote) {
+        finalCoin['price'] = finalCoin.data.quote.price;
+        finalCoin['market_cap'] = finalCoin.data.quote.market_cap;
+        finalCoin['one_hour'] = finalCoin.data.quote.price_change_percentage_1h;
+      } else {
+        finalCoin['one_hour'] = 0;
+      }
+      finalCoins.push(finalCoin);
+    });
+    return finalCoins;
+  };
+
   useEffect(() => {
     const fetchAllCoins = async () => {
       const data = await getter();
       setAllCoins(data);
-      setCoinsPage(data.slice((currentPage - 1) * pageSize, currentPage * pageSize));
+      setCoinsPage(
+        arrangeCoins(data.slice((currentPage - 1) * pageSize, currentPage * pageSize))
+      );
       setCount(data.length);
       setPageCount(Math.ceil(data.length / pageSize));
       setLoading(false);
     };
-    // const fetchVotes = async () => {
-    //   const data = await getAllCoinVotes();
-    //   setVotes(data);
-    // };
     fetchAllCoins();
-    // fetchVotes();
   }, []);
 
   useEffect(() => {
-    console.log(activeTab);
+    // console.log(activeTab);
     const fetchAllCoins = async () => {
       setLoading(true);
       const data = await getTodaysBestCoins();
       setAllCoins(data);
-      setCoinsPage(data.slice((currentPage - 1) * pageSize, currentPage * pageSize));
+      setCoinsPage(
+        arrangeCoins(data.slice((currentPage - 1) * pageSize, currentPage * pageSize))
+      );
       setCount(data.length);
       setPageCount(Math.ceil(data.length / pageSize));
       setLoading(false);
@@ -83,7 +99,9 @@ const CoinTable = ({ title, getter = getTodaysBestCoins }) => {
       setLoading(true);
       const data = await getAllTimeBestCoins();
       setAllCoins(data);
-      setCoinsPage(data.slice((currentPage - 1) * pageSize, currentPage * pageSize));
+      setCoinsPage(
+        arrangeCoins(data.slice((currentPage - 1) * pageSize, currentPage * pageSize))
+      );
       setCount(data.length);
       setPageCount(Math.ceil(data.length / pageSize));
       setLoading(false);
@@ -96,7 +114,7 @@ const CoinTable = ({ title, getter = getTodaysBestCoins }) => {
   }, [activeTab, title]);
 
   const sortCoinsByProperty = (prop) => {
-    coins.sort((a, b) => {
+    coinsPage.sort((a, b) => {
       if (sorting[prop]['order'] % 2 === 1) {
         if (prop === 'name') {
           if (a[prop] > b[prop]) {
@@ -107,23 +125,8 @@ const CoinTable = ({ title, getter = getTodaysBestCoins }) => {
           }
           return 0;
         }
-        let aProp, bProp;
-        switch (prop) {
-          case 'one_hour':
-            aProp = a.in_coingecko ? a.data.quote.price_change_percentage_1h : a[prop];
-            bProp = b.in_coingecko ? b.data.quote.price_change_percentage_1h : b[prop];
-            break;
-          case 'market_cap':
-            aProp = a.in_coingecko ? a.data.quote.market_cap : a[prop];
-            bProp = b.in_coingecko ? b.data.quote.market_cap : b[prop];
-            break;
-          default:
-            aProp = a[prop];
-            bProp = b[prop];
-            break;
-        }
-        // console.log(aProp, bProp);
-        return aProp - bProp;
+        // console.log(a[prop], b[prop], a[prop] - b[prop]);
+        return a[prop] - b[prop];
       } else {
         if (prop === 'name') {
           if (a[prop] > b[prop]) {
@@ -134,23 +137,8 @@ const CoinTable = ({ title, getter = getTodaysBestCoins }) => {
           }
           return 0;
         }
-        let aProp, bProp;
-        switch (prop) {
-          case 'one_hour':
-            aProp = a.in_coingecko ? a.data.quote.price_change_percentage_1h : a[prop];
-            bProp = b.in_coingecko ? b.data.quote.price_change_percentage_1h : b[prop];
-            break;
-          case 'market_cap':
-            aProp = a.in_coingecko ? a.data.quote.market_cap : a[prop];
-            bProp = b.in_coingecko ? b.data.quote.market_cap : b[prop];
-            break;
-          default:
-            aProp = a[prop];
-            bProp = b[prop];
-            break;
-        }
-        // console.log(aProp, bProp);
-        return bProp - aProp;
+        // console.log(a[prop], b[prop], b[prop] - a[prop]);
+        return b[prop] - a[prop];
       }
     });
     setSorting({
@@ -163,7 +151,9 @@ const CoinTable = ({ title, getter = getTodaysBestCoins }) => {
   };
 
   useEffect(() => {
-    setCoinsPage(coins.slice((currentPage - 1) * pageSize, currentPage * pageSize));
+    setCoinsPage(
+      arrangeCoins(coins.slice((currentPage - 1) * pageSize, currentPage * pageSize))
+    );
   }, [currentPage]);
 
   const CoinTableFooter = () => {
@@ -189,7 +179,7 @@ const CoinTable = ({ title, getter = getTodaysBestCoins }) => {
     );
   };
 
-  // console.log(coins, votes, count, pageCount, currentPage, activeTab);
+  // console.log(coins, votes, count, pageCount, currentPage, coinsPage, activeTab);
 
   return (
     <>
@@ -303,7 +293,6 @@ const CoinTable = ({ title, getter = getTodaysBestCoins }) => {
                         <CoinTableItem
                           key={item.id}
                           coin={item}
-                          // votes={votes}
                         />
                       ))}
                   </tbody>
@@ -399,7 +388,6 @@ const CoinTable = ({ title, getter = getTodaysBestCoins }) => {
                         <CoinTableItem
                           key={item.id}
                           coin={item}
-                          // votes={votes}
                           size="small"
                         />
                       ))}
