@@ -15,6 +15,21 @@ const TableItem = ({ coin, size = 'large' }) => {
   //   }
   // }
 
+  let responsiveStyles = {},
+    logoResponsiveStyles = {};
+  if (size === 'small') {
+    responsiveStyles = {
+      padding: '8px 2px 8px 0px',
+      marginLeftt: '0',
+      marginRight: '0',
+      fontSize: '0.8rem'
+    };
+  } else {
+    logoResponsiveStyles = {
+      paddingLeft: '22px !important'
+    };
+  }
+
   if (in_coingecko && !!data.quote) {
     market_cap = data.quote.market_cap;
     percent_change_1h = data.quote.price_change_percentage_1h;
@@ -22,10 +37,21 @@ const TableItem = ({ coin, size = 'large' }) => {
 
   return (
     <tr>
-      <th scope="row">
+      <td
+        scope="row"
+        className="pl-2"
+        style={{ ...responsiveStyles, ...logoResponsiveStyles }}
+      >
         <Media className="align-items-center">
           <Link href={`/coins/${slug}`}>
-            <a className="avatar rounded-circle mr-3" href={`/coins/${slug}`}>
+            <a
+              className="avatar rounded-circle mr-3"
+              href={`/coins/${slug}`}
+              style={{
+                marginLeft: size === 'small' ? '0' : '5px',
+                marginRight: size === 'small' ? '0' : '5px'
+              }}
+            >
               {!!in_coingecko
                 ? !!data.image &&
                   !!data.image.small && (
@@ -35,8 +61,13 @@ const TableItem = ({ coin, size = 'large' }) => {
             </a>
           </Link>
         </Media>
-      </th>
-      <td>
+      </td>
+      <td
+        style={{
+          ...responsiveStyles,
+          whiteSpace: size === 'small' ? 'normal' : 'nowrap'
+        }}
+      >
         <Link href={`/coins/${slug}`}>
           <a href={`/coins/${slug}`} className="text-dark">
             {`${name} ${
@@ -102,7 +133,7 @@ const TableItem = ({ coin, size = 'large' }) => {
           </Link>
         </td>
       ) : (
-        <td className="text-center">
+        <td className="text-center" style={responsiveStyles}>
           <ButtonGroup>
             <Button
               className={`text-dark btn btn-secondary ${

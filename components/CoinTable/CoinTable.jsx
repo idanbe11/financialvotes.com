@@ -330,7 +330,11 @@ const CoinTable = ({ title, getter = getTodaysBestCoins }) => {
                     <NavItem>
                       <NavLink
                         className={classNames({ active: activeTab === 'default' })}
-                        style={{ padding: '0.5rem 1rem', cursor: 'pointer' }}
+                        style={{
+                          padding: '0.5rem 1rem',
+                          cursor: 'pointer',
+                          fontSize: '0.8rem'
+                        }}
                         onClick={() => {
                           toggle('default');
                         }}
@@ -341,7 +345,11 @@ const CoinTable = ({ title, getter = getTodaysBestCoins }) => {
                     <NavItem>
                       <NavLink
                         className={classNames({ active: activeTab === 'alltime' })}
-                        style={{ padding: '0.5rem 1rem', cursor: 'pointer' }}
+                        style={{
+                          padding: '0.5rem 1rem',
+                          cursor: 'pointer',
+                          fontSize: '0.8rem'
+                        }}
                         onClick={() => {
                           toggle('alltime');
                         }}
