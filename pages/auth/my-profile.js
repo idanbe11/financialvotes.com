@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
-import { useSession } from 'next-auth/client';
+import { signOut, useSession } from 'next-auth/client';
 import NotificationAlert from 'react-notification-alert';
 // reactstrap components
 import {
@@ -11,15 +11,90 @@ import {
   Container,
   Row,
   Col,
+  Spinner,
   Form,
   FormGroup,
   Input
 } from 'reactstrap';
+import Modal from 'components/Elements/Modal';
 // layout for this page
 import Auth from 'layouts/Auth';
 
 import UserHeader from 'components/Headers/UserHeader';
-import { updateUser, fetchUser } from 'lib/api';
+import { updateUser, fetchUser, changePasswordAPI } from 'lib/api';
+
+const PasswordResetForm = ({
+  password,
+  newPassword,
+  confirmPassword,
+  passwordChanegHandler,
+  loading
+}) => {
+  return (
+    <Row>
+      <div className="col-12 mb-3">
+        <p>
+          Please enter your current password and new password. You'll be logged out after
+          resetting the password.
+        </p>
+      </div>
+      <div className="col-12">
+        <FormGroup>
+          <label className="form-control-label" htmlFor="input-password">
+            Current Password
+          </label>
+          <Input
+            className="form-control-alternative"
+            value={password}
+            onChange={(e) => {
+              passwordChanegHandler('oldPassword', e.target.value);
+            }}
+            id="input-password"
+            placeholder="Current Password"
+            disabled={loading}
+            type="password"
+          />
+        </FormGroup>
+      </div>
+      <div className="col-12">
+        <FormGroup>
+          <label className="form-control-label" htmlFor="input-new-password">
+            New Password
+          </label>
+          <Input
+            className="form-control-alternative"
+            value={newPassword}
+            onChange={(e) => {
+              passwordChanegHandler('password', e.target.value);
+            }}
+            id="input-new-password"
+            placeholder="New Password"
+            disabled={loading}
+            type="password"
+          />
+        </FormGroup>
+      </div>
+      <div className="col-12">
+        <FormGroup>
+          <label className="form-control-label" htmlFor="input-confirm-password">
+            Confirm Password
+          </label>
+          <Input
+            className="form-control-alternative"
+            value={confirmPassword}
+            onChange={(e) => {
+              passwordChanegHandler('passwordConfirmation', e.target.value);
+            }}
+            id="input-confirm-password"
+            placeholder="Confirm Password"
+            disabled={loading}
+            type="password"
+          />
+        </FormGroup>
+      </div>
+    </Row>
+  );
+};
 
 const MyProfile = (props) => {
   const [session, loading] = useSession();
@@ -28,11 +103,18 @@ const MyProfile = (props) => {
   const router = useRouter();
   const [formLoading, setLoading] = useState(false);
   const notificationAlertRef = useRef();
+  const [changePassword, setChangePassword] = useState(false);
+  const [resetPWReqLoading, setResetPWReqLoading] = useState(false);
   const [userData, setUserData] = useState({
     email: '',
     firstname: '',
     lastname: '',
     data: undefined
+  });
+  const [passwordData, setPasswordData] = useState({
+    oldPassword: '',
+    password: '',
+    passwordConfirmation: ''
   });
 
   useEffect(() => {
@@ -57,6 +139,20 @@ const MyProfile = (props) => {
     setUserData({ ...userData, ...update });
   };
 
+  const resetFields = () => {
+    setUserData({
+      email: '',
+      firstname: '',
+      lastname: '',
+      data: undefined
+    });
+    setPasswordData({
+      oldPassword: '',
+      password: '',
+      passwordConfirmation: ''
+    });
+  };
+
   const notify = (type, title, content) => {
     let options = {
       place: 'bc',
@@ -75,21 +171,46 @@ const MyProfile = (props) => {
     notificationAlertRef.current.notificationAlert(options);
   };
 
-  const handleSubmit = async () => {
+  const handleBasicDetailsUpdateSubmit = async () => {
     const user = userData;
     // console.log(user, session.jwt);
     setLoading(true);
     const res = await updateUser(session.user.id, user, session.jwt);
-    // console.log('handleSubmit', res);
+    // console.log('handleBasicDetailsUpdateSubmit', res);
     if (!!res && !!res.status && res.status === 200) {
       setLoading(false);
       notify('success', 'Success!', 'Your information is updated!');
       setTimeout(() => {
-        router.push('/auth/overview');
-      }, 500);
+        router.reload(window.location.pathname);
+      }, 1000);
     } else {
       setLoading(false);
       notify('danger', 'Error!', 'Invalid request! Please double check the details.');
+      resetFields();
+    }
+  };
+
+  const handleResetPasswordSubmit = async () => {
+    if (!!session) {
+      setResetPWReqLoading(true);
+      const res = await changePasswordAPI(session.jwt, passwordData);
+      // console.log(res);
+      if (typeof res === 'object' && !!res.data && !!res.status && res.status === 200) {
+        setResetPWReqLoading(false);
+        notify('success', 'Your information is updated!');
+        setChangePassword(!changePassword);
+        signOut();
+      } else if (typeof res === 'object' && Array.isArray(res)) {
+        setResetPWReqLoading(false);
+        notify('danger', 'Error!', res[0]['messages'][0]['message']);
+        resetFields();
+      } else {
+        setResetPWReqLoading(false);
+        notify('danger', 'Error!', 'Please try again later.');
+        resetFields();
+      }
+    } else {
+      router.push('/auth/login');
     }
   };
 
@@ -101,6 +222,38 @@ const MyProfile = (props) => {
         <NotificationAlert ref={notificationAlertRef} />
       </div>
       <Container className="mt--7" fluid>
+        <Modal
+          title={'Reset Password'}
+          content={
+            <PasswordResetForm
+              password={passwordData.oldPassword}
+              newPassword={passwordData.password}
+              confirmPassword={passwordData.passwordConfirmation}
+              passwordChanegHandler={(field, value) => {
+                setPasswordData({
+                  ...passwordData,
+                  [field]: value
+                });
+              }}
+              loading={resetPWReqLoading}
+            />
+          }
+          action={handleResetPasswordSubmit}
+          actionText="Confirm"
+          show={changePassword}
+          toggle={() => setChangePassword(!changePassword)}
+          loading={resetPWReqLoading}
+          loaderComponent={
+            <div className="container align-items-center mb-5">
+              <Row className="m-5 p-5">
+                <Col className="text-center">
+                  Please wait...
+                  <Spinner className="mx-3" size="sm" color="info" />
+                </Col>
+              </Row>
+            </div>
+          }
+        />
         <Row>
           <Col className="order-xl-2 mb-5 mb-xl-0" xl="4">
             <Card className="card-profile shadow">
@@ -169,16 +322,14 @@ const MyProfile = (props) => {
               <CardHeader className="bg-white border-0">
                 <Row className="align-items-center">
                   <Col xs="8">
-                    <h3 className="mb-0">My account</h3>
+                    <h3 className="mb-0">My Account</h3>
                   </Col>
                 </Row>
               </CardHeader>
               <CardBody>
                 <Form>
                   <div className="pl-lg-4">
-                    <h6 className="heading-small text-muted mb-4">
-                      Update your information
-                    </h6>
+                    <h6 className="heading-small text-muted mb-4">Information</h6>
                     <Row>
                       <Col lg="6">
                         <FormGroup>
@@ -258,12 +409,32 @@ const MyProfile = (props) => {
                           color="primary"
                           onClick={(e) => {
                             e.preventDefault();
-                            handleSubmit();
+                            handleBasicDetailsUpdateSubmit();
                           }}
                           disabled={formLoading}
                           size="md"
                         >
                           Save
+                        </Button>
+                      </Col>
+                    </Row>
+                  </div>
+                </Form>
+                <Form className="mt-5">
+                  <div className="pl-lg-4">
+                    <h6 className="heading-small text-muted mb-4">Security</h6>
+                    <Row>
+                      <Col className="text-left" xs="4">
+                        <Button
+                          color="warning"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setChangePassword(!changePassword);
+                          }}
+                          disabled={resetPWReqLoading}
+                          size="md"
+                        >
+                          Change Password
                         </Button>
                       </Col>
                     </Row>
