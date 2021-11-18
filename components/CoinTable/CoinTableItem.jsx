@@ -102,7 +102,9 @@ const TableItem = ({ coin, size = 'large' }) => {
             {market_cap !== null
               ? new Intl.NumberFormat('en-US', {
                   style: 'currency',
-                  currency: 'USD'
+                  currency: 'USD',
+                  maximumFractionDigits: 4,
+                  maximumSignificantDigits: 10
                 }).format(market_cap)
               : '-'}
           </td>

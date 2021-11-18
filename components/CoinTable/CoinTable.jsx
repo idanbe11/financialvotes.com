@@ -58,7 +58,11 @@ const CoinTable = ({ title, getter = getTodaysBestCoins }) => {
       finalCoin = _.cloneDeep(item);
       if (finalCoin.in_coingecko && !!finalCoin.data && !!finalCoin.data.quote) {
         finalCoin['price'] = finalCoin.data.quote.price;
-        finalCoin['market_cap'] = finalCoin.data.quote.market_cap;
+        if (item.market_cap !== 0 && finalCoin.data.quote.market_cap === 0) {
+          finalCoin['market_cap'] = item.market_cap;
+        } else {
+          finalCoin['market_cap'] = finalCoin.data.quote.market_cap;
+        }
         finalCoin['one_hour'] = finalCoin.data.quote.price_change_percentage_1h;
       } else {
         finalCoin['one_hour'] = 0;
@@ -290,10 +294,7 @@ const CoinTable = ({ title, getter = getTodaysBestCoins }) => {
                     {!!coinsPage &&
                       Array.isArray(coinsPage) &&
                       coinsPage.map((item) => (
-                        <CoinTableItem
-                          key={item.id}
-                          coin={item}
-                        />
+                        <CoinTableItem key={item.id} coin={item} />
                       ))}
                   </tbody>
                 </Table>
@@ -385,11 +386,7 @@ const CoinTable = ({ title, getter = getTodaysBestCoins }) => {
                     {!!coinsPage &&
                       Array.isArray(coinsPage) &&
                       coinsPage.map((item) => (
-                        <CoinTableItem
-                          key={item.id}
-                          coin={item}
-                          size="small"
-                        />
+                        <CoinTableItem key={item.id} coin={item} size="small" />
                       ))}
                   </tbody>
                 </Table>
