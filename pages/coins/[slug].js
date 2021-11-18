@@ -72,7 +72,7 @@ const CoinSidebar = ({
         {!!quote && (
           <div
             className="accordion my-3 col-md-6 col-lg-12 col-sm-6"
-            id="accordionExample"
+            id="coin-sidebar-quotes"
           >
             <Card className="shadow-sm">
               <CardBody>
@@ -161,7 +161,10 @@ const CoinSidebar = ({
           </div>
         )}
         {/* Web & Social Links */}
-        <div className="accordion my-3 col-md-6 col-lg-12 col-sm-6" id="accordionExample">
+        <div
+          className="accordion my-3 col-md-6 col-lg-12 col-sm-6"
+          id="coin-sidebar-links"
+        >
           <Card className="shadow-sm">
             <CardBody>
               <Row className="my-2 justify-content-center">
@@ -280,7 +283,7 @@ const CoinSidebar = ({
 };
 
 const Coin = ({ coin, error }) => {
-  console.log(coin);
+  // console.log(coin);
 
   const {
     logo,
@@ -396,63 +399,89 @@ const Coin = ({ coin, error }) => {
       />
       <Row>
         <Col className=" ml-auto" md="12" lg="8" xl="9">
-          <div className="accordion my-3" id="accordionExample">
+          <div className="accordion my-3" id="coin-details">
             <Card className="shadow-sm">
-              <CardHeader
-                id="headingOne"
-                // aria-expanded={openedCollapse === 'collapseOne'}
-              >
-                <Row>
-                  <Col xs="6" md="3" sm="3" lg="3" className="mb-2">
-                    <div>
-                      <a href="#" onClick={(e) => e.preventDefault()}>
-                        {!!in_coingecko
-                          ? !!data.image &&
-                            !!data.image.large && (
-                              <img
-                                alt={slug + '-logo'}
-                                className="rounded"
-                                style={{ maxWidth: '100px' }}
-                                src={data.image.large}
-                              />
-                            )
-                          : !!logo &&
-                            logo.url && (
-                              <img
-                                alt={slug + '-logo'}
-                                className="rounded"
-                                style={{ maxWidth: '100px' }}
-                                src={logo.url}
-                              />
-                            )}
-                      </a>
+              <CardHeader id="headingOne">
+                <Container>
+                  <Row>
+                    <Col xs="6" md="3" sm="3" lg="3" className="mb-2">
+                      <div>
+                        <a href="#" onClick={(e) => e.preventDefault()}>
+                          {!!in_coingecko
+                            ? !!data.image &&
+                              !!data.image.large && (
+                                <img
+                                  alt={slug + '-logo'}
+                                  className="rounded"
+                                  style={{ maxWidth: '100px' }}
+                                  src={data.image.large}
+                                />
+                              )
+                            : !!logo &&
+                              logo.url && (
+                                <img
+                                  alt={slug + '-logo'}
+                                  className="rounded"
+                                  style={{ maxWidth: '100px' }}
+                                  src={logo.url}
+                                />
+                              )}
+                        </a>
+                      </div>
+                    </Col>
+                    <Col xs="6" md="6" sm="6" lg="6" className="my-2">
+                      <h2>
+                        {name}
+                        <Badge color="info" className="m-2">
+                          {in_coingecko
+                            ? String(data.symbol).toUpperCase()
+                            : String(symbol).toUpperCase()}
+                        </Badge>
+                      </h2>
+                      {!!votes && <p className="text-muted">{votes} votes</p>}
+                    </Col>
+                    <Col className="text-center mt-3" xs="12" sm="3" lg="3"></Col>
+                  </Row>
+                  <Row className="mt-3">
+                    <div className="col">
+                      {!!coin.contract_address && (
+                        <div>
+                          Contract Address:{' '}
+                          <CopyToClipboard
+                            text={coin.contract_address}
+                            onCopy={() => setCopiedText(coin.contract_address)}
+                          >
+                            <button
+                              className="btn-icon-clipboard p-0"
+                              id={`contract-address-${slug}`}
+                              type="button"
+                              style={{ width: 'auto' }}
+                            >
+                              <span
+                                className="text-teal mx-2 d-sm-none d-inline-block text-truncate"
+                                style={{ maxWidth: '170px' }}
+                              >
+                                {coin.contract_address}
+                              </span>
+                              <span className="text-teal mx-2 d-none d-sm-block">
+                                {coin.contract_address}
+                              </span>
+                            </button>
+                          </CopyToClipboard>
+                          <UncontrolledTooltip
+                            delay={0}
+                            trigger="hover focus"
+                            target={`contract-address-${slug}`}
+                          >
+                            {copiedText === coin.contract_address
+                              ? 'Copied!'
+                              : 'Click to copy'}
+                          </UncontrolledTooltip>
+                        </div>
+                      )}
                     </div>
-                  </Col>
-                  <Col xs="6" md="6" sm="6" lg="6" className="my-2">
-                    <h2>
-                      {name}
-                      <Badge color="info" className="m-2">
-                        {in_coingecko
-                          ? String(data.symbol).toUpperCase()
-                          : String(symbol).toUpperCase()}
-                      </Badge>
-                    </h2>
-                    {!!votes && <p className="text-muted">{votes} votes</p>}
-                  </Col>
-                  <Col className="text-center mt-3" xs="12" sm="3" lg="3">
-                    <Button
-                      className="mr-4 mt-2"
-                      color="success"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setVoteModalConfirm(!voteConfirm);
-                      }}
-                      size="md"
-                    >
-                      Vote
-                    </Button>
-                  </Col>
-                </Row>
+                  </Row>
+                </Container>
               </CardHeader>
               <CardBody className="px-0">
                 <Container>
@@ -471,37 +500,36 @@ const Coin = ({ coin, error }) => {
               </CardBody>
               <CardFooter className="px-0">
                 <Container>
-                  <div className="col">
-                    {!!coin.contract_address && (
-                      <div>
-                        Contract Address:{' '}
-                        <CopyToClipboard
-                          text={coin.contract_address}
-                          onCopy={() => setCopiedText(coin.contract_address)}
-                        >
-                          <button
-                            className="btn-icon-clipboard p-0"
-                            id={`contract-address-${slug}`}
-                            type="button"
-                            style={{ width: 'auto' }}
-                          >
-                            <span className="text-teal mx-2">
-                              {coin.contract_address}
-                            </span>
-                          </button>
-                        </CopyToClipboard>
-                        <UncontrolledTooltip
-                          delay={0}
-                          trigger="hover focus"
-                          target={`contract-address-${slug}`}
-                        >
-                          {copiedText === coin.contract_address
-                            ? 'Copied!'
-                            : 'Click to copy'}
-                        </UncontrolledTooltip>
+                  <Row>
+                    <Col>
+                      <div className="p-3">
+                        <div className="row">
+                          <div className="col-md-8 col-sm-12">
+                            Votes (All time) for{' '}
+                            <span className="text-info">{coin.name + ' : '}</span>
+                            <span className="text-orange">{coin.votes}</span>
+                          </div>
+                          <div className="col">
+                            <Button
+                              className="mr-4 mt-2 mt-md-0"
+                              color="success"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setVoteModalConfirm(!voteConfirm);
+                              }}
+                              size="md"
+                            >
+                              Vote Now!
+                            </Button>
+                          </div>
+                        </div>
                       </div>
-                    )}
-                  </div>
+                      <div className="px-3 font-italic">
+                        You can vote once every 24 hours per coin. And you have to be
+                        logged in.
+                      </div>
+                    </Col>
+                  </Row>
                 </Container>
               </CardFooter>
             </Card>
