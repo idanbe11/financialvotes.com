@@ -62,6 +62,16 @@ function Login() {
                   </Link>
                 </NavItem>
                 <NavItem>
+                  <Link href="/pages/faq">
+                    <a className="nav-link">FAQ</a>
+                  </Link>
+                </NavItem>
+                <NavItem>
+                  <Link href="/pages/roadmap">
+                    <a className="nav-link">Roadmap</a>
+                  </Link>
+                </NavItem>
+                <NavItem>
                   <Link href="/terms-and-conditions">
                     <a className="nav-link">T{`&`}C</a>
                   </Link>

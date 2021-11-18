@@ -66,6 +66,11 @@ function Footer() {
                 </Link>
               </NavItem>
               <NavItem>
+                <Link href="/pages/faq">
+                  <a className="nav-link">FAQ</a>
+                </Link>
+              </NavItem>
+              <NavItem>
                 <Link href="/privacy-policy">
                   <a className="nav-link">Privacy Policy</a>
                 </Link>
