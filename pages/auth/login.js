@@ -19,7 +19,6 @@ import {
   FormFeedback
 } from 'reactstrap';
 // layout for page
-// import Auth from 'layouts/Auth.js';
 import Guest from 'layouts/Guest';
 
 function Login() {
@@ -138,8 +137,8 @@ function Login() {
             </a> */}
           </Col>
           <Col className="text-right" xs="6">
-            <a className="text-light" href="/auth/register">
-              <small>Create new account</small>
+            <a className="text-green" href="/auth/register">
+              Create new account
             </a>
           </Col>
         </Row>
@@ -148,7 +147,6 @@ function Login() {
   );
 }
 
-// Login.layout = Auth;
 Login.layout = Guest;
 
 export default Login;

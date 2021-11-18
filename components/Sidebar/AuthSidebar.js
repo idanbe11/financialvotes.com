@@ -170,6 +170,25 @@ function Sidebar(props) {
           <Nav navbar className="mt-6">
             {createLinks(routes)}
           </Nav>
+          {/* Divider */}
+          <hr className="my-3" />
+          {/* Navigation */}
+          <Nav className="mb-md-3" navbar>
+            <NavItem>
+              <NavLink href="/news">Crypto News</NavLink>
+            </NavItem>
+            <NavItem>
+              <NavLink href="/pages/faq">FAQ</NavLink>
+            </NavItem>
+            <NavItem>
+              <NavLink href="/pages/roadmap">Roadmap</NavLink>
+            </NavItem>
+          </Nav>
+          <Nav className="mt-3">
+            <NavItem active className="btn">
+              <NavLink href="/auth/orders/new?type=advert">Advertise with us!</NavLink>
+            </NavItem>
+          </Nav>
         </Collapse>
       </Container>
     </Navbar>
