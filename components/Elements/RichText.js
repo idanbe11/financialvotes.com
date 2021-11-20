@@ -4,9 +4,11 @@ import { PropTypes } from 'prop-types';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { materialDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 
-const RichText = ({ content, centerAligned = false }) => (
+const RichText = ({ content, centerAligned = false, lineBreak = false }) => (
   <ReactMarkdown
-    className={`container line-break ${centerAligned ? 'center-align' : ''}`}
+    className={`container rich-text ${centerAligned ? 'center-align' : ''} ${
+      lineBreak ? 'line-break ' : ''
+    }`}
     components={{
       code({ className, children }) {
         // Removing "language-" because React-Markdown already added "language-"

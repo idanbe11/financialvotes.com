@@ -9,7 +9,7 @@ import RoadMap from '../../components/RoadMap/RoadMap';
 
 const RoadMapPage = ({ data, error }) => {
   const { pageData } = data;
-  // console.log(data);
+  // console.log(pageData);
 
   return (
     <>
@@ -19,7 +19,11 @@ const RoadMapPage = ({ data, error }) => {
             <div className="accordion m-3" id="faq-page-header">
               {!!pageData.title && <h1 className="mb-5">{pageData.title}</h1>}
               {!!pageData.description && !!pageData.description.content && (
-                <RichText content={pageData.description.content} centerAligned={true} />
+                <RichText
+                  content={pageData.description.content}
+                  centerAligned={true}
+                  lineBreak={true}
+                />
               )}
             </div>
           </Col>

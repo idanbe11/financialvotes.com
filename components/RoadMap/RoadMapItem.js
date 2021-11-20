@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { iconsList } from '../../variables/icons';
+import RichText from 'components/Elements/RichText';
 
 const RoadMapItem = ({ title, time, description, color, icon }) => (
   <div className="vertical-timeline-item vertical-timeline-element">
@@ -9,8 +10,8 @@ const RoadMapItem = ({ title, time, description, color, icon }) => (
         <i className={`ni ${iconsList[icon]} text-${color}`}></i>
       </span>
       <div className="vertical-timeline-element-content bounce-in">
-        <h4 className={`timeline-title text-${color}`}>{title}</h4>
-        <p>{description}</p>
+        <h4 className={`timeline-title mb-4 text-${color}`}>{title}</h4>
+        {!!description && <RichText content={description} />}
         <span className="vertical-timeline-element-date">{time}</span>
       </div>
     </div>

@@ -5,7 +5,10 @@
 .container.line-break.center-align {
    text-align: center;
 }
-
+.container.rich-text img{
+   max-width: 100%;
+   height: auto;
+}
 /**
 --  TIMELINE STYLES  --
 **/
@@ -54,7 +57,7 @@
 }
 
 .vertical-timeline-element-content .timeline-title {
-   font-size: .9rem;
+   font-size: 1rem;
    text-transform: uppercase;
    margin: 0 0 .5rem;
    padding: 2px 0 0;
